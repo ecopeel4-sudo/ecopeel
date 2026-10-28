@@ -184,6 +184,10 @@ h1 { font: 800 clamp(23px, 2vw, 29px)/1.22 Manrope, sans-serif; letter-spacing: 
 .notifications-page-panel { padding: 19px 22px; }
 .notification-panel-header { align-items: center; gap: 16px; }
 .notification-panel-header > div { min-width: 0; }
+.notification-header-tools { display: flex; align-items: center; justify-content: flex-end; gap: 10px; flex-wrap: wrap; }
+.notification-mark-all-button { min-height: 31px; }
+.notification-button-spinner { display: inline-block; width: 12px; height: 12px; border: 2px solid #c9dfc7; border-top-color: #39784a; border-radius: 50%; animation: notification-spin .7s linear infinite; }
+@keyframes notification-spin { to { transform: rotate(360deg); } }
 .notification-type-filter { display: flex; align-items: center; gap: 8px; color: #849085; font-size: 10px; flex: 0 0 auto; }
 .notification-type-filter select { min-width: 190px; max-width: 235px; }
 .notification-list:not(.compact-list) { margin-top: 8px; }
@@ -423,6 +427,8 @@ h1 { font: 800 clamp(23px, 2vw, 29px)/1.22 Manrope, sans-serif; letter-spacing: 
   .notification-row time { font-size: 8px; }
   .notification-content strong, .notification-content p { font-size: 9px; }
   .notification-panel-header { align-items: flex-start; flex-direction: column; }
+  .notification-header-tools { width: 100%; align-items: stretch; flex-direction: column; gap: 9px; }
+  .notification-mark-all-button { align-self: flex-start; }
   .notification-type-filter { width: 100%; justify-content: space-between; }
   .notification-type-filter select { flex: 1; max-width: none; min-width: 0; }
   .notification-actions { margin-left: 45px; width: calc(100% - 45px); justify-content: flex-start; }
