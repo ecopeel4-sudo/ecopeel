@@ -10,7 +10,8 @@ import {
   Tooltip, XAxis, YAxis
 } from "recharts";
 import {
-  onAuthStateChanged, signInWithEmailAndPassword, signOut
+  EmailAuthProvider, onAuthStateChanged, reauthenticateWithCredential,
+  signInWithEmailAndPassword, signOut, updatePassword
 } from "firebase/auth";
 import { onValue, ref } from "firebase/database";
 import { auth, db, isFirebaseConfigured } from "./firebase.js";
@@ -127,6 +128,12 @@ export default function App() {
   const [loginError, setLoginError] = useState("");
   const [loginBusy, setLoginBusy] = useState(false);
   const [historyFilter, setHistoryFilter] = useState("All");
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [passwordError, setPasswordError] = useState("");
+  const [passwordMessage, setPasswordMessage] = useState("");
+  const [passwordBusy, setPasswordBusy] = useState(false);
 
   const demoMode = !isFirebaseConfigured;
   const isAdmin = Boolean(user);
@@ -233,10 +240,69 @@ export default function App() {
     }
   }
 
+  async function handlePasswordChange(event) {
+    event.preventDefault();
+    setPasswordError("");
+    setPasswordMessage("");
+
+    if (!auth || !user) {
+      setPasswordError("Sign in with an administrator account before changing the password.");
+      return;
+    }
+    if (!currentPassword || !newPassword || !confirmPassword) {
+      setPasswordError("Complete all password fields.");
+      return;
+    }
+    if (newPassword.length < 8) {
+      setPasswordError("Choose a new password with at least 8 characters.");
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      setPasswordError("The new password and confirmation do not match.");
+      return;
+    }
+    if (currentPassword === newPassword) {
+      setPasswordError("Your new password must be different from the current password.");
+      return;
+    }
+    if (!user.email) {
+      setPasswordError("This account has no email/password sign-in. Contact the system administrator.");
+      return;
+    }
+
+    setPasswordBusy(true);
+    try {
+      const credential = EmailAuthProvider.credential(user.email, currentPassword);
+      await reauthenticateWithCredential(user, credential);
+      await updatePassword(user, newPassword);
+      setCurrentPassword("");
+      setNewPassword("");
+      setConfirmPassword("");
+      setPasswordMessage("Your EcoPeel admin password has been changed successfully.");
+    } catch (error) {
+      const messages = {
+        "auth/invalid-credential": "The current password is incorrect.",
+        "auth/wrong-password": "The current password is incorrect.",
+        "auth/weak-password": "Firebase rejected this password. Choose a stronger password.",
+        "auth/requires-recent-login": "For security, sign out and sign back in before trying again.",
+        "auth/too-many-requests": "Too many attempts. Please try again later.",
+        "auth/network-request-failed": "Network error. Check your connection and try again."
+      };
+      setPasswordError(messages[error.code] || "Could not change the password. Please verify your current password and try again.");
+    } finally {
+      setPasswordBusy(false);
+    }
+  }
+
   async function handleLogout() {
     if (auth) await signOut(auth);
     setUser(null);
     setPage("dashboard");
+    setCurrentPassword("");
+    setNewPassword("");
+    setConfirmPassword("");
+    setPasswordError("");
+    setPasswordMessage("");
   }
 
   function navigate(nextPage) {
@@ -254,7 +320,8 @@ export default function App() {
     { id: "notifications", label: "Notifications", icon: Bell, count: unreadCount },
     ...(isAdmin ? [
       { id: "history", label: "Production history", icon: History, section: "ADMINISTRATION" },
-      { id: "analytics", label: "Analytics", icon: TrendingUp }
+      { id: "analytics", label: "Analytics", icon: TrendingUp },
+      { id: "change-password", label: "Change password", icon: ShieldCheck }
     ] : [])
   ];
 
@@ -305,7 +372,7 @@ export default function App() {
         <header className="topbar">
           <div className="topbar-left">
             <button className="icon-button menu-button" aria-label="Open menu" onClick={() => setSidebarOpen(true)}><Menu size={21} /></button>
-            <div className="breadcrumbs"><span>EcoPeel</span><ChevronRight size={14} /><strong>{page === "dashboard" ? "Live dashboard" : page === "machine" ? "Machine status" : page === "notifications" ? "Notifications" : page === "history" ? "Production history" : page === "analytics" ? "Analytics" : "Admin sign in"}</strong></div>
+            <div className="breadcrumbs"><span>EcoPeel</span><ChevronRight size={14} /><strong>{page === "dashboard" ? "Live dashboard" : page === "machine" ? "Machine status" : page === "notifications" ? "Notifications" : page === "history" ? "Production history" : page === "analytics" ? "Analytics" : page === "change-password" ? "Change password" : "Admin sign in"}</strong></div>
           </div>
           <div className="topbar-right">
             <div className="updated-label"><span className={"connection-dot " + (machineOnline ? "" : "offline")} />{demoMode ? "Preview environment" : machineOnline ? "Device connected" : "Waiting for device"}</div>
@@ -419,6 +486,52 @@ export default function App() {
             <section className="panel analytics-chart-panel"><div className="panel-header"><div><h3>Dehydrator readings</h3><p>Temperature and humidity from telemetry</p></div></div>{trend.length ? <div className="chart-wrap large-chart"><ResponsiveContainer width="100%" height="100%"><AreaChart data={trend} margin={{ top: 10, right: 10, left: -18, bottom: 0 }}><CartesianGrid strokeDasharray="3 5" vertical={false} stroke="#e9eee7" /><XAxis dataKey="time" tick={{ fill: "#89938a", fontSize: 11 }} axisLine={false} tickLine={false} /><YAxis tick={{ fill: "#89938a", fontSize: 11 }} axisLine={false} tickLine={false} /><Tooltip contentStyle={{ borderRadius: 10, border: "1px solid #e5ebe2", fontSize: 12 }} /><Area type="monotone" dataKey="temperature" name="Temperature °C" stroke="#43875e" fill="#43875e" fillOpacity={0.10} strokeWidth={2.5} /><Area type="monotone" dataKey="humidity" name="Humidity %" stroke="#5d91c9" fill="#5d91c9" fillOpacity={0.06} strokeWidth={2} /></AreaChart></ResponsiveContainer></div> : <EmptyState title="No telemetry data" text="Connect Firebase and start storing sensor readings to show trends." />}</section>
             <section className="panel analytics-chart-panel"><div className="panel-header"><div><h3>Batch outcomes</h3><p>Completed and interrupted batches in the available records</p></div></div>{history.length ? <div className="chart-wrap large-chart"><ResponsiveContainer width="100%" height="100%"><BarChart data={[{ outcome: "Completed", count: history.filter((r) => String(r.status).toLowerCase() === "completed").length }, { outcome: "Interrupted", count: history.filter((r) => String(r.status).toLowerCase() === "interrupted").length }]} margin={{ top: 14, right: 10, left: -18, bottom: 0 }}><CartesianGrid strokeDasharray="3 5" vertical={false} stroke="#e9eee7" /><XAxis dataKey="outcome" tick={{ fill: "#89938a", fontSize: 12 }} axisLine={false} tickLine={false} /><YAxis allowDecimals={false} tick={{ fill: "#89938a", fontSize: 11 }} axisLine={false} tickLine={false} /><Tooltip contentStyle={{ borderRadius: 10, border: "1px solid #e5ebe2", fontSize: 12 }} /><Bar dataKey="count" name="Batches" fill="#43875e" radius={[6, 6, 0, 0]} barSize={54} /></BarChart></ResponsiveContainer></div> : <EmptyState title="No batch outcome data" text="Stored production history will be summarized here." />}</section>
             {demoMode && <div className="info-banner"><AlertTriangle size={16} /><span>Analytics are based on illustrative demo records until real data is available.</span></div>}
+          </div>
+        )}
+
+
+        {page === "change-password" && isAdmin && (
+          <div className="page-content">
+            <div className="page-heading">
+              <div>
+                <div className="eyebrow">ACCOUNT SECURITY</div>
+                <h1>Change password</h1>
+                <p>Update the password used to sign in to your EcoPeel administrator account.</p>
+              </div>
+              <StatusPill tone="success">Administrator account</StatusPill>
+            </div>
+            <div className="security-layout">
+              <section className="panel security-form-panel">
+                <div className="security-panel-heading">
+                  <div className="security-panel-icon"><ShieldCheck size={21} /></div>
+                  <div><h3>Update your password</h3><p>Confirm your current password before choosing a new one.</p></div>
+                </div>
+                <form className="login-form password-form" onSubmit={handlePasswordChange}>
+                  <label htmlFor="currentPassword">Current password</label>
+                  <input id="currentPassword" type="password" autoComplete="current-password" placeholder="Enter current password" value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} required />
+                  <label htmlFor="newPassword">New password</label>
+                  <input id="newPassword" type="password" autoComplete="new-password" placeholder="At least 8 characters" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} minLength={8} required />
+                  <label htmlFor="confirmPassword">Confirm new password</label>
+                  <input id="confirmPassword" type="password" autoComplete="new-password" placeholder="Re-enter new password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} minLength={8} required />
+                  <div className="password-hint"><ShieldCheck size={15} /><span>Use at least 8 characters. Never share your administrator password.</span></div>
+                  {passwordError && <div className="login-error"><AlertTriangle size={16} />{passwordError}</div>}
+                  {passwordMessage && <div className="password-success"><CheckCircle2 size={17} /><span>{passwordMessage}</span></div>}
+                  <button className="sign-in-button" type="submit" disabled={passwordBusy}>
+                    {passwordBusy ? "Updating password…" : <><ShieldCheck size={17} /> Save new password</>}
+                  </button>
+                </form>
+              </section>
+              <aside className="panel security-info-panel">
+                <div className="security-info-icon"><ShieldCheck size={20} /></div>
+                <h3>Keep your account secure</h3>
+                <p>EcoPeel asks you to re-enter your current password before it changes your sign-in credentials.</p>
+                <div className="security-check"><CheckCircle2 size={16} /><span>Current password verified</span></div>
+                <div className="security-check"><CheckCircle2 size={16} /><span>New password confirmed</span></div>
+                <div className="security-check"><CheckCircle2 size={16} /><span>Saved through Firebase Authentication</span></div>
+                <div className="security-note">Changing this password does not affect machine operation or stored production records.</div>
+              </aside>
+            </div>
+            <div className="page-footer"><span>Password changes apply to the current administrator account.</span><span><ShieldCheck size={14} /> Protected by Firebase Authentication</span></div>
           </div>
         )}
 
