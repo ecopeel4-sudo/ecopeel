@@ -884,6 +884,28 @@ export default function App() {
             <div className="status-summary-card"><div className="machine-status-emblem"><Factory size={28} /></div><div className="machine-status-main"><span className="metric-label">CURRENT MACHINE STATE</span><h2>{currentStatus}</h2><p>{live?.currentStep || live?.process || "Waiting for process state data."}</p></div><div className="machine-status-meta"><span>Machine power</span><strong className={"power-reading " + (machinePowerOn === true ? "is-on" : machinePowerOn === false ? "is-off" : "is-unknown")}>{machinePowerOn === null ? "Unknown" : machinePowerOn ? "ON" : "OFF"}</strong><span>Device connection</span><StatusPill tone={machineOnline ? "success" : "warning"}>{machineOnline ? "Connected" : "Offline"}</StatusPill><small className="machine-updated">{live ? formatDate(live.updatedAt || live.timestamp) : "No data received"}</small></div></div>
             <div className="section-heading"><div><h2>Operating sensors</h2><p>Values reported by the controller</p></div></div>
             <div className="metric-grid"><MetricCard icon={Thermometer} label="Mixing temperature" value={live?.temperature ?? live?.mixingTemperature ?? "—"} unit={live?.temperature != null || live?.mixingTemperature != null ? "°C" : ""} caption="DS18B20 / cooking vessel" /><MetricCard icon={Thermometer} label="Dehydrator temperature" value={live?.dehydratorTemperature ?? "—"} unit={live?.dehydratorTemperature != null ? "°C" : ""} caption="Dehydrator chamber" tone="orange" /><MetricCard icon={Droplet} label="Humidity" value={live?.humidity ?? "—"} unit={live?.humidity != null ? "%" : ""} caption="Dehydrator chamber" tone="blue" /><MetricCard icon={Gauge} label="Process progress" value={live ? currentProgress : "—"} unit={live ? "%" : ""} caption="Current batch" tone="purple" /></div>
+            <div className="section-heading material-sensor-section-heading">
+              <div><h2>Material availability</h2><p>Live status of water, vinegar, glycerin, and corn starch supplies</p></div>
+              <span className="section-note"><span className="live-dot" /> Live sensor status</span>
+            </div>
+            <div className="material-sensor-grid machine-material-sensors">
+              {materialSensorStates.map((sensor) => {
+                const isEmpty = sensor.status === "empty";
+                const isAvailable = sensor.status === "available";
+                const stateLabel = isEmpty ? "Empty" : isAvailable ? "Available" : "Waiting for data";
+                const stateTone = isEmpty ? "warning" : isAvailable ? "success" : "neutral";
+                const SensorIcon = sensor.Icon;
+                return <article key={sensor.key} className={"material-sensor-card " + (isEmpty ? "is-empty" : isAvailable ? "is-available" : "is-unknown")}>
+                  <div className={"material-sensor-icon " + (isEmpty ? "warning" : isAvailable ? "success" : "")}><SensorIcon size={20} strokeWidth={1.9} /></div>
+                  <div className="material-sensor-main">
+                    <span className="material-sensor-label">{sensor.label}</span>
+                    <div className="material-sensor-state"><StatusPill tone={stateTone}>{stateLabel}</StatusPill></div>
+                    <p>{sensor.sensorType}</p>
+                  </div>
+                  <span className="material-sensor-state-copy">{isEmpty ? "Refill required" : isAvailable ? "Supply detected" : "No status received"}</span>
+                </article>;
+              })}
+            </div>
             <div className="panel workflow-full-panel">
               <div className="panel-header">
                 <div><h3>Production sequence</h3><p>Process states reported or expected by the machine controller</p></div>
