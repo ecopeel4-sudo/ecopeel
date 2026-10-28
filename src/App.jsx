@@ -61,6 +61,22 @@ const PROCESS_STEPS = [
   "Molder dispensing", "Molder transfer", "Dehydrating"
 ];
 
+function getCurrentStepIndex(live) {
+  if (!live) return null;
+  const text = [
+    live.currentStep, live.process, live.status, live.currentState, live.machineState
+  ].filter((value) => typeof value === "string").join(" ").trim().toLowerCase();
+
+  if (!text) return null;
+  if (/raw material|water dispensing|glycerin|corn starch|vinegar dispensing|dispensing raw/.test(text)) return 1;
+  if (/molder dispensing|dispensing molder/.test(text)) return 3;
+  if (/molder transfer|transfer molder|transferring molder|linear actuator|lift motor|layer position|transfer(?!ring?)/.test(text)) return 4;
+  if (/mixing|mix(?:ing)?\b|cooking|cook(?:ing)?\b/.test(text)) return 2;
+  if (/dehydrat|dehydration|drying|dry cycle/.test(text)) return 5;
+  if (/grind|pulver/.test(text)) return 0;
+  return null;
+}
+
 function formatClock(value) {
   if (!value) return "—";
   const date = typeof value === "number" ? new Date(value) : new Date(value);
@@ -160,7 +176,15 @@ export default function App() {
           ["grind", "dispens", "mix", "cook", "molder", "dehydrat", "transfer"].some((term) => activeProcessText.includes(term))
           ? true
           : null;
-  const currentProgress = Math.min(100, Math.max(0, Number(live?.progress || 0)));
+  const currentStepIndex = getCurrentStepIndex(live);
+  const hasReportedProgress = live?.progress !== undefined && live?.progress !== null &&
+    live?.progress !== "" && Number.isFinite(Number(live.progress));
+  const currentProgress = hasReportedProgress
+    ? Math.min(100, Math.max(0, Number(live.progress)))
+    : currentStepIndex !== null
+      ? Math.round((currentStepIndex / PROCESS_STEPS.length) * 100)
+      : 0;
+  const hasProgressData = hasReportedProgress || currentStepIndex !== null;
   const visibleHistory = useMemo(
     () => historyFilter === "All" ? history : history.filter((item) => String(item.status || "").toLowerCase() === historyFilter.toLowerCase()),
     [history, historyFilter]
@@ -445,9 +469,8 @@ export default function App() {
                 <div className="workflow-progress"><div className="workflow-progress-top"><span>Current batch</span><strong>{currentProgress}%</strong></div><div className="progress-track"><div className="progress-value" style={{ width: currentProgress + "%" }} /></div></div>
                 <div className="process-list">
                   {PROCESS_STEPS.map((step, index) => {
-                    const currentStep = String(live?.currentStep || live?.process || live?.status || "").toLowerCase();
-                    const matchIndex = PROCESS_STEPS.findIndex((label) => currentStep.includes(label.toLowerCase().split(" ")[0]));
-                    const activeIndex = matchIndex >= 0 ? matchIndex : (demoMode ? 5 : -1);
+                    const detectedIndex = currentStepIndex === null && demoMode ? 5 : currentStepIndex;
+                    const activeIndex = detectedIndex ?? -1;
                     const complete = activeIndex >= 0 && index < activeIndex;
                     const active = index === activeIndex;
                     return <div className={"process-step " + (complete ? "complete" : "") + (active ? " current" : "")} key={step}><div className="step-marker">{complete ? <CheckCircle2 size={16} /> : <span>{index + 1}</span>}</div><div className="step-label"><strong>{step}</strong>{active && <small>Current stage</small>}</div>{active && <span className="step-active-tag">Active</span>}</div>;
@@ -479,7 +502,39 @@ export default function App() {
             <div className="status-summary-card"><div className="machine-status-emblem"><Factory size={28} /></div><div className="machine-status-main"><span className="metric-label">CURRENT MACHINE STATE</span><h2>{currentStatus}</h2><p>{live?.currentStep || live?.process || "Waiting for process state data."}</p></div><div className="machine-status-meta"><span>Machine power</span><strong className={"power-reading " + (machinePowerOn === true ? "is-on" : machinePowerOn === false ? "is-off" : "is-unknown")}>{machinePowerOn === null ? "Unknown" : machinePowerOn ? "ON" : "OFF"}</strong><span>Device connection</span><StatusPill tone={machineOnline ? "success" : "warning"}>{machineOnline ? "Connected" : "Offline"}</StatusPill><small className="machine-updated">{live ? formatDate(live.updatedAt || live.timestamp) : "No data received"}</small></div></div>
             <div className="section-heading"><div><h2>Operating sensors</h2><p>Values reported by the controller</p></div></div>
             <div className="metric-grid"><MetricCard icon={Thermometer} label="Mixing temperature" value={live?.temperature ?? live?.mixingTemperature ?? "—"} unit={live?.temperature != null || live?.mixingTemperature != null ? "°C" : ""} caption="DS18B20 / cooking vessel" /><MetricCard icon={Thermometer} label="Dehydrator temperature" value={live?.dehydratorTemperature ?? "—"} unit={live?.dehydratorTemperature != null ? "°C" : ""} caption="Dehydrator chamber" tone="orange" /><MetricCard icon={Droplet} label="Humidity" value={live?.humidity ?? "—"} unit={live?.humidity != null ? "%" : ""} caption="Dehydrator chamber" tone="blue" /><MetricCard icon={Gauge} label="Process progress" value={live ? currentProgress : "—"} unit={live ? "%" : ""} caption="Current batch" tone="purple" /></div>
-            <div className="panel workflow-full-panel"><div className="panel-header"><div><h3>Production sequence</h3><p>Process states reported or expected by the machine controller</p></div></div><div className="full-process-grid">{PROCESS_STEPS.map((step, i) => <div key={step} className="full-process-card"><span className="full-step-index">0{i + 1}</span><strong>{step}</strong><span className="full-step-status">{String(live?.currentStep || live?.process || live?.status || "").toLowerCase().includes(step.toLowerCase().split(" ")[0]) ? "Current stage" : "Awaiting status mapping"}</span></div>)}</div></div>
+            <div className="panel workflow-full-panel">
+              <div className="panel-header">
+                <div><h3>Production sequence</h3><p>Process states reported or expected by the machine controller</p></div>
+                <span className="workflow-stage-count">{currentStepIndex === null ? "6 stages" : "Stage " + (currentStepIndex + 1) + " of " + PROCESS_STEPS.length}</span>
+              </div>
+              <div className="machine-progress-block">
+                <div className="machine-progress-heading">
+                  <div><span>Overall production progress</span><small>{hasReportedProgress ? "Reported by the machine controller" : hasProgressData ? "Estimated from the current process stage" : "Waiting for machine status"}</small></div>
+                  <strong>{hasProgressData ? currentProgress + "%" : "—"}</strong>
+                </div>
+                <div className="machine-progress-track" role="progressbar" aria-label="Overall production progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow={hasProgressData ? currentProgress : 0}>
+                  <div className="machine-progress-value" style={{ width: (hasProgressData ? currentProgress : 0) + "%" }} />
+                </div>
+                <div className="machine-progress-caption">
+                  <span>Start</span>
+                  <span>{currentStepIndex === null ? "Current step not identified" : "Current stage: " + PROCESS_STEPS[currentStepIndex]}</span>
+                  <span>Complete</span>
+                </div>
+              </div>
+              <div className="full-process-grid">
+                {PROCESS_STEPS.map((step, i) => {
+                  const stepIsCurrent = currentStepIndex === i || (currentStepIndex === null && demoMode && i === 5);
+                  const stepIsComplete = currentStepIndex !== null && i < currentStepIndex;
+                  const stepClass = stepIsCurrent ? "current" : stepIsComplete ? "complete" : "upcoming";
+                  const statusLabel = stepIsCurrent ? "Current stage" : stepIsComplete ? "Completed stage" : currentStepIndex === null ? "Awaiting status mapping" : "Upcoming stage";
+                  return <div key={step} className={"full-process-card " + stepClass}>
+                    <span className="full-step-index">{String(i + 1).padStart(2, "0")}</span>
+                    <strong>{step}</strong>
+                    <span className="full-step-status">{statusLabel}</span>
+                  </div>;
+                })}
+              </div>
+            </div>
             <div className="page-footer"><span>Machine actions are not available from this website.</span><span><ShieldCheck size={14} /> Hardware safety stays on the controller</span></div>
           </div>
         )}
