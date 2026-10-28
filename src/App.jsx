@@ -122,7 +122,7 @@ function getMaterialSensorStatus(live, sensorKey) {
   }
 
   if (typeof value === "string") {
-    const state = value.trim().toLowerCase().replace(/[\\s-]+/g, "_");
+    const state = value.trim().toLowerCase().replace(/[\s-]+/g, "_");
     if (["empty", "not_available", "not_present", "low", "dry"].includes(state)) return "empty";
     if (["available", "present", "ok", "normal", "full", "detected", "occupied", "not_empty"].includes(state)) return "available";
     return "unknown";
