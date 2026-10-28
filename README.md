@@ -72,9 +72,9 @@ Use a Unix timestamp in milliseconds for \`updatedAt\`, \`createdAt\`, and telem
 
 ## Admin security
 
-The admin login uses Firebase Authentication email/password. The web app checks the signed-in user's ID token for the \`admin: true\` custom claim before enabling the admin pages. Creating a Firebase Authentication user alone is not sufficient to grant admin access; set the claim from a trusted environment using the Firebase Admin SDK, never from browser code.
+The admin login uses Firebase Authentication email/password and the Realtime Database allowlist at \`ecopeel/admins/{uid}\`. After creating an admin user in Firebase Authentication, add the user's UID as a Boolean \`true\` at \`ecopeel/admins/{uid}\` using the Firebase Console. The app verifies this role by reading only that user's own allowlist entry. Do not allow clients to write to \`ecopeel/admins\`; the example rules deny client writes there.
 
-The public dashboard only needs public read access to live monitoring data, notifications, and telemetry. Production history should only be readable by admins. Device writes should require a separately authenticated device identity. Review \`database.rules.example.json\` before adapting it to your project; do not deploy permissive test rules.
+The public dashboard only needs public read access to live monitoring data, notifications, and telemetry. Production history should only be readable by admins. Device writes should require a separately authenticated device identity. Review \`database.rules.example.json\` before applying its rules to your project; don't deploy permissive test rules.
 
 ## Important
 
