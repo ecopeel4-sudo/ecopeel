@@ -48,8 +48,46 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
 .nav-active-line { position: absolute; width: 3px; height: 24px; background: #438358; border-radius: 0 3px 3px 0; left: -14px; }
 .nav-count { margin-left: auto; background: #dceee0; color: #2f7544; font-weight: 700; border-radius: 20px; padding: 2px 7px; font-size: 10px; }
 .sidebar-bottom { margin-top: 20px; }
-.sidebar-help { display: flex; align-items: center; gap: 9px; border: 1px solid #e8eee6; border-radius: 10px; padding: 10px 8px; margin: 0 3px 15px; color: #8e988f; }
-.help-icon { width: 28px; height: 28px; border-radius: 8px; background: #f3f6f1; display: grid; place-items: center; }
+.sidebar-help { width: calc(100% - 6px); display: flex; align-items: center; gap: 9px; border: 1px solid #e8eee6; border-radius: 10px; padding: 10px 8px; margin: 0 3px 15px; color: #8e988f; background: #fff; text-align: left; cursor: pointer; transition: border-color .15s ease, background .15s ease; }
+.sidebar-help:hover { border-color: #cddfc9; background: #fbfdf9; }
+.sidebar-help:focus-visible { outline: 2px solid #7cab80; outline-offset: 2px; }
+.help-icon { width: 28px; height: 28px; border-radius: 8px; background: #f3f6f1; display: grid; place-items: center; flex: 0 0 auto; }
+.help-dialog-backdrop { position: fixed; z-index: 1000; inset: 0; display: grid; place-items: center; padding: 22px; background: rgba(25, 38, 27, .42); backdrop-filter: blur(3px); }
+.help-dialog { width: min(760px, 100%); max-height: min(88vh, 860px); overflow-y: auto; padding: 23px; border: 1px solid #e3eae0; border-radius: 16px; background: #fff; box-shadow: 0 24px 80px rgba(20, 35, 22, .22); color: #435345; }
+.help-dialog-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; padding-bottom: 18px; border-bottom: 1px solid #edf1eb; }
+.help-dialog-brand { display: flex; align-items: flex-start; gap: 12px; min-width: 0; }
+.help-dialog-icon { display: grid; place-items: center; width: 42px; height: 42px; flex: 0 0 42px; border-radius: 12px; background: #edf5eb; color: #43875e; }
+.help-dialog-header h2 { margin: 4px 0 5px; color: #314235; font: 800 19px/1.3 Manrope, sans-serif; letter-spacing: -.35px; }
+.help-dialog-header p { margin: 0; color: #8d988e; font-size: 10px; line-height: 1.5; }
+.help-dialog-close { flex: 0 0 auto; }
+.help-dialog-section { padding: 17px 0; border-bottom: 1px solid #edf1eb; }
+.help-dialog-section h3 { margin: 0 0 11px; color: #405142; font: 800 12px/1.4 Manrope, sans-serif; }
+.help-system-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 9px; }
+.help-system-item { display: flex; flex-direction: column; gap: 6px; min-width: 0; padding: 11px 12px; border: 1px solid #edf1eb; border-radius: 8px; background: #fbfcfa; }
+.help-system-item > span { color: #8b968c; font-size: 9px; }
+.help-system-item > strong { color: #405142; font-size: 11px; line-height: 1.4; overflow-wrap: anywhere; }
+.help-system-item > strong.help-value-good { color: #438354; }
+.help-system-item > strong.help-value-warning { color: #b16b31; }
+.help-material-list { border: 1px solid #edf1eb; border-radius: 9px; overflow: hidden; }
+.help-material-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 9px 11px; }
+.help-material-row + .help-material-row { border-top: 1px solid #f0f3ee; }
+.help-material-row > span { color: #465748; font-size: 10px; font-weight: 700; }
+.help-material-row small { display: block; margin-top: 3px; color: #9aa39a; font-size: 9px; font-weight: 400; }
+.help-note { margin: 9px 0 0; color: #8c978d; font-size: 9px; line-height: 1.5; }
+.help-troubleshooting-list { display: grid; gap: 9px; }
+.help-troubleshooting-list > div { display: flex; align-items: flex-start; gap: 10px; }
+.help-troubleshooting-list > div > span { display: grid; place-items: center; width: 25px; height: 25px; flex: 0 0 25px; border-radius: 7px; background: #f1f6ef; color: #54815a; font-size: 9px; font-weight: 800; }
+.help-troubleshooting-list p { margin: 0; color: #859186; font-size: 10px; line-height: 1.55; }
+.help-troubleshooting-list strong { display: block; color: #465748; font-size: 10px; margin-bottom: 2px; }
+.help-troubleshooting-list code { padding: 1px 3px; border-radius: 3px; background: #f2f5f0; color: #49614a; font-size: 9px; overflow-wrap: anywhere; }
+.help-dialog-footer { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-top: 17px; }
+.help-dialog-footer > span { display: inline-flex; align-items: center; gap: 6px; color: #7e8b7f; font-size: 10px; }
+.help-dialog-footer > div { display: flex; align-items: center; gap: 8px; }
+.help-secondary-button, .help-primary-button { display: inline-flex; align-items: center; justify-content: center; padding: 9px 12px; border: 1px solid #dfe8dc; border-radius: 8px; background: #fff; color: #526453; font-size: 10px; font-weight: 700; cursor: pointer; }
+.help-secondary-button:hover { background: #f6f9f5; }
+.help-primary-button { border-color: #3d7f4f; background: #3d7f4f; color: #fff; }
+.help-primary-button:hover { background: #316b41; }
+
 .sidebar-help strong, .sidebar-help span { display: block; }
 .sidebar-help strong { font-size: 10px; color: #455347; margin-bottom: 3px; }
 .sidebar-help span { font-size: 9px; color: #929b92; }
@@ -403,6 +441,14 @@ h1 { font: 800 clamp(23px, 2vw, 29px)/1.22 Manrope, sans-serif; letter-spacing: 
   .page-footer { line-height: 1.5; }
 }
 @media (max-width: 540px) {
+  .help-dialog-backdrop { padding: 10px; align-items: end; }
+  .help-dialog { max-height: 92vh; padding: 16px; border-radius: 14px; }
+  .help-dialog-header h2 { font-size: 16px; }
+  .help-system-grid { grid-template-columns: 1fr; gap: 7px; }
+  .help-system-item { padding: 9px 10px; }
+  .help-dialog-footer { align-items: stretch; flex-direction: column; }
+  .help-dialog-footer > div { width: 100%; }
+  .help-secondary-button, .help-primary-button { flex: 1; }
   .page-heading { flex-direction: column; gap: 15px; margin-bottom: 20px; }
   h1 { font-size: 23px; }
   .heading-actions { width: 100%; }
