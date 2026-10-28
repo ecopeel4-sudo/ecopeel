@@ -751,12 +751,12 @@ export default function App() {
   }
 
   const navItems = [
-    { id: "dashboard", label: "Live dashboard", icon: LayoutDashboard, section: "MONITORING" },
-    { id: "machine", label: "Machine status", icon: Factory },
+    { id: "dashboard", label: "Live Dashboard", icon: LayoutDashboard, section: "MONITORING" },
+    { id: "machine", label: "Machine Status", icon: Factory },
     { id: "notifications", label: "Notifications", icon: Bell, count: unreadCount },
     ...(isAdmin ? [
-      { id: "history", label: "Production history", icon: History, section: "ADMINISTRATION" },
-      { id: "change-password", label: "Change password", icon: ShieldCheck }
+      { id: "history", label: "Production History", icon: History, section: "ADMINISTRATION" },
+      { id: "change-password", label: "Change Password", icon: ShieldCheck }
     ] : [])
   ];
 
@@ -771,7 +771,7 @@ export default function App() {
         </div>
         <div className="sidebar-project">
           <span className="project-avatar"><Factory size={16} /></span>
-          <span><strong>Bioplastic machine</strong><small>Monitoring station 01</small></span>
+          <span><strong>Bioplastic Machine</strong><small>Monitoring Station 01</small></span>
           <ChevronDown size={15} className="project-chevron" />
         </div>
         <nav className="side-nav" aria-label="Main navigation">
@@ -794,7 +794,7 @@ export default function App() {
           )}
         </nav>
         <div className="sidebar-bottom">
-          <div className="sidebar-help"><div className="help-icon"><CircleHelp size={18} /></div><div><strong>Need assistance?</strong><span>View system information</span></div><ChevronRight size={16} /></div>
+          <div className="sidebar-help"><div className="help-icon"><CircleHelp size={18} /></div><div><strong>Need Assistance?</strong><span>View system information</span></div><ChevronRight size={16} /></div>
           <div className="sidebar-profile">
             <div className="profile-avatar">{isAdmin ? (user.email || "A").slice(0, 1).toUpperCase() : "EP"}</div>
             <div className="profile-details"><strong>{isAdmin ? "EcoPeel Admin" : "Public viewer"}</strong><span>{isAdmin ? "Administrator access" : "Read-only access"}</span></div>
@@ -827,7 +827,7 @@ export default function App() {
             </div>
 
             <div className="overview-strip">
-              <div className="overview-label"><span className="overview-pulse" /><div><strong>Machine overview</strong><small>{demoMode ? "Sample machine status" : live ? "Latest Firebase status" : "Waiting for first device update"}</small></div></div>
+              <div className="overview-label"><span className="overview-pulse" /><div><strong>Machine Overview</strong><small>{demoMode ? "Sample machine status" : live ? "Latest Firebase status" : "Waiting for first device update"}</small></div></div>
               <div className="overview-divider" />
               <div className="overview-stat"><span>Current state</span><strong>{currentStatus}</strong></div>
               <div className="overview-stat"><span>Current process</span><strong>{live?.currentStep || live?.process || (live ? currentStatus : "No data yet")}</strong></div>
@@ -840,16 +840,16 @@ export default function App() {
               <div className="overview-end"><StatusPill tone={machineOnline ? "success" : "warning"}>{demoMode ? "Demo online" : machineOnline ? "Device online" : "Device offline"}</StatusPill></div>
             </div>
 
-            <div className="section-heading"><div><h2>Live sensor readings</h2><p>Key temperatures and environmental conditions</p></div><span className="section-note"><span className="live-dot" /> Live data</span></div>
+            <div className="section-heading"><div><h2>Live Sensor Readings</h2><p>Key temperatures and environmental conditions</p></div><span className="section-note"><span className="live-dot" /> Live data</span></div>
             <div className="metric-grid">
-              <MetricCard icon={Thermometer} label="Mixing temperature" value={live?.temperature ?? live?.mixingTemperature ?? "—"} unit={live?.temperature != null || live?.mixingTemperature != null ? "°C" : ""} caption="Cooking and mixing unit" tone="green" />
-              <MetricCard icon={Thermometer} label="Dehydrator temperature" value={live?.dehydratorTemperature ?? "—"} unit={live?.dehydratorTemperature != null ? "°C" : ""} caption="Drying chamber" tone="orange" />
-              <MetricCard icon={Droplet} label="Dehydrator humidity" value={live?.humidity ?? "—"} unit={live?.humidity != null ? "%" : ""} caption="Relative humidity" tone="blue" />
-              <MetricCard icon={Factory} label="Molders loaded" value={live ? (live.loadedMolders ?? 0) + " / " + (live.targetMolders ?? 6) : "—"} unit="" caption="Dehydrator capacity" tone="purple" />
+              <MetricCard icon={Thermometer} label="Mixing Temperature" value={live?.temperature ?? live?.mixingTemperature ?? "—"} unit={live?.temperature != null || live?.mixingTemperature != null ? "°C" : ""} caption="Cooking and mixing unit" tone="green" />
+              <MetricCard icon={Thermometer} label="Dehydrator Temperature" value={live?.dehydratorTemperature ?? "—"} unit={live?.dehydratorTemperature != null ? "°C" : ""} caption="Drying chamber" tone="orange" />
+              <MetricCard icon={Droplet} label="Dehydrator Humidity" value={live?.humidity ?? "—"} unit={live?.humidity != null ? "%" : ""} caption="Relative humidity" tone="blue" />
+              <MetricCard icon={Factory} label="Molders Loaded" value={live ? (live.loadedMolders ?? 0) + " / " + (live.targetMolders ?? 6) : "—"} unit="" caption="Dehydrator capacity" tone="purple" />
             </div>
 
             <div className="section-heading material-sensor-section-heading">
-              <div><h2>Material availability</h2><p>Live status of water, vinegar, glycerin, and corn starch supplies</p></div>
+              <div><h2>Material Availability</h2><p>Live status of water, vinegar, glycerin, and corn starch supplies</p></div>
               <span className="section-note"><span className="live-dot" /> Live sensor status</span>
             </div>
             <div className="material-sensor-grid dashboard-material-sensors">
@@ -873,13 +873,13 @@ export default function App() {
 
             <div className="dashboard-grid">
               <section className="panel temperature-panel">
-                <div className="panel-header"><div><h3>Dehydrator environment</h3><p>Temperature and humidity trend</p></div><span className="chart-period">Recent readings <ChevronDown size={14} /></span></div>
+                <div className="panel-header"><div><h3>Dehydrator Environment</h3><p>Temperature and humidity trend</p></div><span className="chart-period">Recent Readings <ChevronDown size={14} /></span></div>
                 {trend.length ? <div className="chart-wrap"><ResponsiveContainer width="100%" height="100%"><AreaChart data={trend} margin={{ top: 10, right: 8, left: -18, bottom: 0 }}><defs><linearGradient id="temperatureFill" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#43875e" stopOpacity={0.18} /><stop offset="100%" stopColor="#43875e" stopOpacity={0.01} /></linearGradient></defs><CartesianGrid strokeDasharray="3 5" vertical={false} stroke="#e9eee7" /><XAxis dataKey="time" tick={{ fill: "#89938a", fontSize: 11 }} axisLine={false} tickLine={false} /><YAxis tick={{ fill: "#89938a", fontSize: 11 }} axisLine={false} tickLine={false} /><Tooltip contentStyle={{ borderRadius: 10, border: "1px solid #e5ebe2", fontSize: 12 }} /><Area type="monotone" dataKey="temperature" name="Temperature °C" stroke="#43875e" strokeWidth={2.5} fill="url(#temperatureFill)" /><Area type="monotone" dataKey="humidity" name="Humidity %" stroke="#5d91c9" strokeWidth={2} fill="transparent" /></AreaChart></ResponsiveContainer></div> : <EmptyState title="No sensor history yet" text="Telemetry readings will appear here when the ESP32 starts sending data to Firebase." />}
                 <div className="chart-legend"><span><i className="legend-line green-line" /> Temperature (°C)</span><span><i className="legend-line blue-line" /> Humidity (%)</span></div>
               </section>
 
               <section className="panel process-panel">
-                <div className="panel-header"><div><h3>Production workflow</h3><p>Process progress at a glance</p></div><span className="workflow-icon"><Activity size={17} /></span></div>
+                <div className="panel-header"><div><h3>Production Workflow</h3><p>Process progress at a glance</p></div><span className="workflow-icon"><Activity size={17} /></span></div>
                 <div className="workflow-progress"><div className="workflow-progress-top"><span>Current batch</span><strong>{currentProgress}%</strong></div><div className="progress-track"><div className="progress-value" style={{ width: currentProgress + "%" }} /></div></div>
                 <div className="process-list">
                   {PROCESS_STEPS.map((step, index) => {
@@ -896,11 +896,11 @@ export default function App() {
 
             <div className="bottom-grid">
               <section className="panel alerts-panel">
-                <div className="panel-header"><div><h3>Recent notifications</h3><p>System alerts and process updates</p></div><button className="text-link" onClick={() => navigate("notifications")}>View all <ChevronRight size={15} /></button></div>
+                <div className="panel-header"><div><h3>Recent Notifications</h3><p>System alerts and process updates</p></div><button className="text-link" onClick={() => navigate("notifications")}>View all <ChevronRight size={15} /></button></div>
                 {notifications.length ? <div className="notification-list compact-list">{notifications.slice(0, 3).map((item) => <NotificationRow key={item.id} item={item} />)}</div> : <EmptyState title="No notifications" text="New alerts will appear here when recorded in Firebase." />}
               </section>
               <section className="panel capacity-panel">
-                <div className="panel-header"><div><h3>Dehydrator capacity</h3><p>Molder loading progress</p></div><Factory size={18} className="muted-icon" /></div>
+                <div className="panel-header"><div><h3>Dehydrator Capacity</h3><p>Molder loading progress</p></div><Factory size={18} className="muted-icon" /></div>
                 <div className="capacity-number"><strong>{live?.loadedMolders ?? (demoMode ? 4 : 0)}</strong><span>/ {live?.targetMolders ?? 6} molders loaded</span></div>
                 <div className="capacity-slots">{Array.from({ length: Number(live?.targetMolders ?? 6) || 6 }, (_, i) => <span key={i} className={i < Number(live?.loadedMolders ?? (demoMode ? 4 : 0)) ? "slot filled" : "slot"} />)}</div>
                 <div className="capacity-footer"><span><i className="slot-key filled-key" /> Loaded</span><span><i className="slot-key empty-key" /> Available</span></div>
@@ -912,12 +912,12 @@ export default function App() {
 
         {page === "machine" && (
           <div className="page-content">
-            <div className="page-heading"><div><div className="eyebrow">DEVICE DETAILS</div><h1>Machine status</h1><p>Current operating state and sensor health for the EcoPeel machine.</p></div><StatusPill tone={machineOnline ? "success" : "warning"}>{demoMode ? "Demo environment" : machineOnline ? "Connected" : "Waiting for device"}</StatusPill></div>
+            <div className="page-heading"><div><div className="eyebrow">DEVICE DETAILS</div><h1>Machine Status</h1><p>Current operating state and sensor health for the EcoPeel machine.</p></div><StatusPill tone={machineOnline ? "success" : "warning"}>{demoMode ? "Demo environment" : machineOnline ? "Connected" : "Waiting for device"}</StatusPill></div>
             <div className="status-summary-card"><div className="machine-status-emblem"><Factory size={28} /></div><div className="machine-status-main"><span className="metric-label">CURRENT MACHINE STATE</span><h2>{currentStatus}</h2><p>{live?.currentStep || live?.process || "Waiting for process state data."}</p></div><div className="machine-status-meta"><span>Machine power</span><strong className={"power-reading " + (machinePowerOn === true ? "is-on" : machinePowerOn === false ? "is-off" : "is-unknown")}>{machinePowerOn === null ? "Unknown" : machinePowerOn ? "ON" : "OFF"}</strong><span>Device connection</span><StatusPill tone={machineOnline ? "success" : "warning"}>{machineOnline ? "Connected" : "Offline"}</StatusPill><small className="machine-updated">{live ? formatDate(live.updatedAt || live.timestamp) : "No data received"}</small></div></div>
-            <div className="section-heading"><div><h2>Operating sensors</h2><p>Values reported by the controller</p></div></div>
-            <div className="metric-grid"><MetricCard icon={Thermometer} label="Mixing temperature" value={live?.temperature ?? live?.mixingTemperature ?? "—"} unit={live?.temperature != null || live?.mixingTemperature != null ? "°C" : ""} caption="DS18B20 / cooking vessel" /><MetricCard icon={Thermometer} label="Dehydrator temperature" value={live?.dehydratorTemperature ?? "—"} unit={live?.dehydratorTemperature != null ? "°C" : ""} caption="Dehydrator chamber" tone="orange" /><MetricCard icon={Droplet} label="Humidity" value={live?.humidity ?? "—"} unit={live?.humidity != null ? "%" : ""} caption="Dehydrator chamber" tone="blue" /><MetricCard icon={Gauge} label="Process progress" value={live ? currentProgress : "—"} unit={live ? "%" : ""} caption="Current batch" tone="purple" /></div>
+            <div className="section-heading"><div><h2>Operating Sensors</h2><p>Values reported by the controller</p></div></div>
+            <div className="metric-grid"><MetricCard icon={Thermometer} label="Mixing Temperature" value={live?.temperature ?? live?.mixingTemperature ?? "—"} unit={live?.temperature != null || live?.mixingTemperature != null ? "°C" : ""} caption="DS18B20 / cooking vessel" /><MetricCard icon={Thermometer} label="Dehydrator Temperature" value={live?.dehydratorTemperature ?? "—"} unit={live?.dehydratorTemperature != null ? "°C" : ""} caption="Dehydrator chamber" tone="orange" /><MetricCard icon={Droplet} label="Humidity" value={live?.humidity ?? "—"} unit={live?.humidity != null ? "%" : ""} caption="Dehydrator chamber" tone="blue" /><MetricCard icon={Gauge} label="Process Progress" value={live ? currentProgress : "—"} unit={live ? "%" : ""} caption="Current batch" tone="purple" /></div>
             <div className="section-heading material-sensor-section-heading">
-              <div><h2>Material availability</h2><p>Live status of water, vinegar, glycerin, and corn starch supplies</p></div>
+              <div><h2>Material Availability</h2><p>Live status of water, vinegar, glycerin, and corn starch supplies</p></div>
               <span className="section-note"><span className="live-dot" /> Live sensor status</span>
             </div>
             <div className="material-sensor-grid machine-material-sensors">
@@ -940,7 +940,7 @@ export default function App() {
             </div>
             <div className="panel workflow-full-panel">
               <div className="panel-header">
-                <div><h3>Production sequence</h3><p>Process states reported or expected by the machine controller</p></div>
+                <div><h3>Production Sequence</h3><p>Process states reported or expected by the machine controller</p></div>
                 <span className="workflow-stage-count">{currentStepIndex === null ? "6 stages" : "Stage " + (currentStepIndex + 1) + " of " + PROCESS_STEPS.length}</span>
               </div>
               <div className="machine-progress-block">
@@ -983,7 +983,7 @@ export default function App() {
             </div>
             <section className="panel notifications-page-panel">
               <div className="panel-header notification-panel-header">
-                <div><h3>All notifications</h3><p>{visibleNotifications.length} matching record{visibleNotifications.length === 1 ? "" : "s"} · {unreadCount} unread</p></div>
+                <div><h3>All Notifications</h3><p>{visibleNotifications.length} matching record{visibleNotifications.length === 1 ? "" : "s"} · {unreadCount} unread</p></div>
                 <div className="notification-header-tools">
                   {isAdmin && unreadCount > 0 && <button type="button" className="notification-action-button mark-read notification-mark-all-button" disabled={markingAllRead} onClick={handleMarkAllNotificationsRead} title="Mark all notifications as read">
                     {markingAllRead ? <span className="notification-button-spinner" /> : <Check size={14} />}
@@ -1001,17 +1001,17 @@ export default function App() {
 
         {page === "history" && isAdmin && (
           <div className="page-content">
-            <div className="page-heading"><div><div className="eyebrow">BATCH RECORDS</div><h1>Production history</h1><p>Review past batches and their recorded outcomes.</p></div><div className="heading-actions"><span className="date-chip"><History size={15} /> {history.length} records</span></div></div>
+            <div className="page-heading"><div><div className="eyebrow">BATCH RECORDS</div><h1>Production History</h1><p>Review past batches and their recorded outcomes.</p></div><div className="heading-actions"><span className="date-chip"><History size={15} /> {history.length} records</span></div></div>
             <section className="panel production-count-panel history-production-summary">
               <div className="production-count-header">
-                <div><h3>Production summary</h3><p>Batch totals and overall performance</p></div>
+                <div><h3>Production Summary</h3><p>Batch totals and overall performance</p></div>
               </div>
               <div className="production-summary-grid">
                 <div className="production-supporting-metric is-primary">
                   <div className="production-supporting-icon"><Factory size={20} strokeWidth={1.9} /></div>
                   <div className="production-supporting-copy">
                     <div className="production-metric-heading">
-                      <span className="production-supporting-label">Completed batches</span>
+                      <span className="production-supporting-label">Completed Batches</span>
                       <select className="filter-select production-period-select" aria-label="Period for completed batches" value={batchCountPeriod} onChange={(event) => setBatchCountPeriod(event.target.value)}>
                         <option value="day">Today</option>
                         <option value="week">This week</option>
@@ -1026,7 +1026,7 @@ export default function App() {
                 <div className="production-supporting-metric">
                   <div className="production-supporting-icon"><CheckCircle2 size={20} strokeWidth={1.9} /></div>
                   <div className="production-supporting-copy">
-                    <span className="production-supporting-label">Success rate</span>
+                    <span className="production-supporting-label">Success Rate</span>
                     <div className="production-supporting-value">{history.length ? Math.round(history.filter((r) => String(r.status).toLowerCase() === "completed").length / history.length * 100) : "—"}<small>{history.length ? "%" : ""}</small></div>
                     <span className="production-supporting-caption">Recorded batch outcomes</span>
                   </div>
@@ -1035,7 +1035,7 @@ export default function App() {
                   <div className="production-supporting-icon blue"><Factory size={20} strokeWidth={1.9} /></div>
                   <div className="production-supporting-copy">
                     <div className="production-metric-heading">
-                      <span className="production-supporting-label">Total molders</span>
+                      <span className="production-supporting-label">Total Molders</span>
                       <select className="filter-select production-period-select" aria-label="Period for total molders" value={moldersPeriod} onChange={(event) => setMoldersPeriod(event.target.value)}>
                         <option value="day">Today</option>
                         <option value="week">This week</option>
@@ -1050,7 +1050,7 @@ export default function App() {
                 <div className="production-supporting-metric">
                   <div className="production-supporting-icon purple"><Clock3 size={20} strokeWidth={1.9} /></div>
                   <div className="production-supporting-copy">
-                    <span className="production-supporting-label">Average batch duration</span>
+                    <span className="production-supporting-label">Average Batch Duration</span>
                     <div className="production-supporting-value">{history.length ? Math.round(history.reduce((sum, r) => sum + Number(r.durationMinutes || 0), 0) / history.length) : "—"}<small>{history.length ? " min" : ""}</small></div>
                     <span className="production-supporting-caption">Based on stored durations</span>
                   </div>
@@ -1059,7 +1059,7 @@ export default function App() {
             </section>
             <section className="panel history-panel">
               <div className="panel-header history-panel-header">
-                <div><h3>Batch records</h3><p>Production activity log · {visibleHistory.length} matching record{visibleHistory.length === 1 ? "" : "s"}</p></div>
+                <div><h3>Batch Records</h3><p>Production activity log · {visibleHistory.length} matching record{visibleHistory.length === 1 ? "" : "s"}</p></div>
               </div>
               <div className="history-toolbar">
                 <label className="history-search-box">
@@ -1131,7 +1131,7 @@ export default function App() {
             <div className="page-heading">
               <div>
                 <div className="eyebrow">ACCOUNT SECURITY</div>
-                <h1>Change password</h1>
+                <h1>Change Password</h1>
                 <p>Update the password used to sign in to your EcoPeel administrator account.</p>
               </div>
               <StatusPill tone="success">Administrator account</StatusPill>
@@ -1140,7 +1140,7 @@ export default function App() {
               <section className="panel security-form-panel">
                 <div className="security-panel-heading">
                   <div className="security-panel-icon"><ShieldCheck size={21} /></div>
-                  <div><h3>Update your password</h3><p>Confirm your current password before choosing a new one.</p></div>
+                  <div><h3>Update Your Password</h3><p>Confirm your current password before choosing a new one.</p></div>
                 </div>
                 <form className="login-form password-form" onSubmit={handlePasswordChange}>
                   <label htmlFor="currentPassword">Current password</label>
@@ -1159,7 +1159,7 @@ export default function App() {
               </section>
               <aside className="panel security-info-panel">
                 <div className="security-info-icon"><ShieldCheck size={20} /></div>
-                <h3>Keep your account secure</h3>
+                <h3>Keep Your Account Secure</h3>
                 <p>EcoPeel asks you to re-enter your current password before it changes your sign-in credentials.</p>
                 <div className="security-check"><CheckCircle2 size={16} /><span>Current password verified</span></div>
                 <div className="security-check"><CheckCircle2 size={16} /><span>New password confirmed</span></div>
@@ -1176,7 +1176,7 @@ export default function App() {
             <div className="login-card">
               <div className="login-brand-mark"><Banana size={27} strokeWidth={2.2} /></div>
               <div className="eyebrow">RESTRICTED AREA</div>
-              <h1>Administrator sign in</h1>
+              <h1>Administrator Sign In</h1>
               <p className="login-description">Sign in with your authorized EcoPeel administrator account to access production history.</p>
               {demoMode && <div className="login-demo-notice"><AlertTriangle size={16} /><span>Firebase is not configured yet. Demo mode is for interface testing; admin sign-in will become available after Firebase setup.</span></div>}
               <form className="login-form" onSubmit={handleLogin}>
