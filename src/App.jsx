@@ -3,7 +3,7 @@ import {
   Activity, AlertTriangle, Bell, CalendarClock, CheckCircle2, ChevronDown,
   ChevronLeft, ChevronRight, CircleHelp, ClipboardList, Clock3, Droplet,
   Factory, Gauge, History, Layers, LayoutDashboard, Banana, LogIn, LogOut,
-  Menu, Power, ShieldCheck, Thermometer, Trash2, Wifi, WifiOff, Wind, X
+  Menu, Power, Search, ShieldCheck, Thermometer, Trash2, Wifi, WifiOff, Wind, X
 } from "lucide-react";
 import {
   Area, AreaChart, Bar, BarChart, CartesianGrid, ResponsiveContainer,
@@ -174,6 +174,7 @@ export default function App() {
   const [loginError, setLoginError] = useState("");
   const [loginBusy, setLoginBusy] = useState(false);
   const [historyFilter, setHistoryFilter] = useState("All");
+  const [historySearch, setHistorySearch] = useState("");
   const [historyPage, setHistoryPage] = useState(1);
   const [deletingHistoryId, setDeletingHistoryId] = useState(null);
   const [historyActionError, setHistoryActionError] = useState("");
@@ -219,10 +220,26 @@ export default function App() {
       ? Math.round((currentStepIndex / PROCESS_STEPS.length) * 100)
       : 0;
   const hasProgressData = hasReportedProgress || currentStepIndex !== null;
-  const visibleHistory = useMemo(
-    () => historyFilter === "All" ? history : history.filter((item) => String(item.status || "").toLowerCase() === historyFilter.toLowerCase()),
-    [history, historyFilter]
-  );
+  const visibleHistory = useMemo(() => {
+    const query = historySearch.trim().toLowerCase();
+    return history.filter((item) => {
+      const statusMatches = historyFilter === "All" ||
+        String(item.status || "").toLowerCase() === historyFilter.toLowerCase();
+      if (!statusMatches) return false;
+      if (!query) return true;
+
+      const searchableValues = [
+        item.batchId, item.id, item.status,
+        formatDate(item.startedAt || item.timestamp),
+        formatDate(item.endedAt || item.completedAt || item.finishedAt),
+        item.durationMinutes, item.molders, item.loadedMolders
+      ];
+      return searchableValues.some((value) =>
+        value !== undefined && value !== null &&
+        String(value).toLowerCase().includes(query)
+      );
+    });
+  }, [history, historyFilter, historySearch]);
   const historyPageSize = 5;
   const historyPageCount = Math.max(1, Math.ceil(visibleHistory.length / historyPageSize));
   const currentHistoryPage = Math.min(historyPage, historyPageCount);
@@ -744,11 +761,27 @@ export default function App() {
               </div>
             </section>
             <section className="panel history-panel">
-              <div className="panel-header">
-                <div><h3>Batch records</h3><p>Production activity log · {visibleHistory.length} record{visibleHistory.length === 1 ? "" : "s"}</p></div>
-                <select className="filter-select" value={historyFilter} aria-label="Filter batch records by status" onChange={(event) => { setHistoryFilter(event.target.value); setHistoryPage(1); }}>
-                  <option>All</option><option>Completed</option><option>Interrupted</option>
-                </select>
+              <div className="panel-header history-panel-header">
+                <div><h3>Batch records</h3><p>Production activity log · {visibleHistory.length} matching record{visibleHistory.length === 1 ? "" : "s"}</p></div>
+              </div>
+              <div className="history-toolbar">
+                <label className="history-search-box">
+                  <Search size={15} aria-hidden="true" />
+                  <input
+                    type="search"
+                    value={historySearch}
+                    aria-label="Search batch records"
+                    placeholder="Search batch ID, status, date..."
+                    onChange={(event) => { setHistorySearch(event.target.value); setHistoryPage(1); }}
+                  />
+                  {historySearch && <button type="button" className="history-search-clear" aria-label="Clear search" title="Clear search" onClick={() => { setHistorySearch(""); setHistoryPage(1); }}><X size={14} /></button>}
+                </label>
+                <label className="history-status-filter">
+                  <span>Status</span>
+                  <select className="filter-select" value={historyFilter} aria-label="Filter batch records by status" onChange={(event) => { setHistoryFilter(event.target.value); setHistoryPage(1); }}>
+                    <option>All</option><option>Completed</option><option>Interrupted</option>
+                  </select>
+                </label>
               </div>
               {historyActionError && <div className="history-action-error" role="alert"><AlertTriangle size={15} /><span>{historyActionError}</span></div>}
               {visibleHistory.length ? <>
