@@ -1,9 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
 import {
-  Activity, AlertTriangle, Bell, CalendarClock, CheckCircle2, ChevronDown,
-  ChevronLeft, ChevronRight, CircleHelp, ClipboardList, Clock3, Droplet,
-  Factory, Gauge, History, Layers, LayoutDashboard, Banana, LogIn, LogOut,
-  Menu, Power, Search, ShieldCheck, Thermometer, Trash2, Wifi, WifiOff, Wind, X
+  Activity, AlertTriangle, Bell, CalendarClock, Check, CheckCircle2,
+  ChevronDown, ChevronLeft, ChevronRight, CircleHelp, ClipboardList, Clock3,
+  Droplet, Factory, Gauge, History, Layers, LayoutDashboard, Banana, LogIn,
+  LogOut, Menu, Power, Search, ShieldCheck, Thermometer, Trash2, Wifi, WifiOff,
+  Wind, X
 } from "lucide-react";
 import {
   Area, AreaChart, Bar, BarChart, CartesianGrid, ResponsiveContainer,
@@ -13,7 +14,7 @@ import {
   EmailAuthProvider, onAuthStateChanged, reauthenticateWithCredential,
   signInWithEmailAndPassword, signOut, updatePassword
 } from "firebase/auth";
-import { get, onValue, ref, remove } from "firebase/database";
+import { get, onValue, push, ref, remove, update } from "firebase/database";
 import { auth, db, isFirebaseConfigured } from "./firebase.js";
 
 const DEMO_LIVE = {
@@ -60,6 +61,107 @@ const PROCESS_STEPS = [
   "Grinding", "Raw material dispensing", "Mixing & cooking",
   "Molder dispensing", "Molder transfer", "Dehydrating"
 ];
+
+const MATERIAL_SENSORS = [
+  { key: "water", label: "Water", sensorType: "Non-contact liquid sensor", Icon: Droplet },
+  { key: "vinegar", label: "Vinegar", sensorType: "Non-contact liquid sensor", Icon: Droplet },
+  { key: "glycerin", label: "Glycerin", sensorType: "Non-contact liquid sensor", Icon: Droplet },
+  { key: "cornStarch", label: "Corn starch", sensorType: "IR sensor", Icon: Activity }
+];
+
+const NOTIFICATION_FILTERS = [
+  { value: "all", label: "All notification types" },
+  { value: "malfunction", label: "Malfunction" },
+  { value: "emergency_stop", label: "Emergency stop" },
+  { value: "empty_chamber", label: "Empty chamber" },
+  { value: "no_molder", label: "No molder" },
+  { value: "over_temperature", label: "Over temperature" },
+  { value: "batch_done", label: "Batch done" },
+  { value: "empty_material", label: "Empty material" },
+  { value: "other", label: "Other / general" }
+];
+
+function getMaterialSensorStatus(live, sensorKey) {
+  if (!live) return "unknown";
+  const aliases = sensorKey === "cornStarch"
+    ? ["cornStarch", "corn_starch", "corn starch", "cornStarchSensor", "cornStarchIR"]
+    : [sensorKey, sensorKey + "Sensor"];
+  const sources = [
+    live.materialSensors,
+    live.materials,
+    live.ingredientSensors,
+    live.ingredients
+  ].filter((source) => source && typeof source === "object");
+
+  let value;
+  let found = false;
+  for (const source of sources) {
+    for (const alias of aliases) {
+      if (Object.prototype.hasOwnProperty.call(source, alias)) {
+        value = source[alias];
+        found = true;
+        break;
+      }
+    }
+    if (found) break;
+  }
+
+  const directEmptyKeys = [
+    sensorKey + "Empty",
+    sensorKey.charAt(0).toLowerCase() + sensorKey.slice(1) + "_empty"
+  ];
+  if (!found) {
+    const directKey = directEmptyKeys.find((key) => typeof live[key] === "boolean");
+    if (directKey) return live[directKey] ? "empty" : "available";
+  }
+  if (!found) {
+    const directLevelKeys = [sensorKey + "Level", sensorKey + "_level"];
+    const directLevelKey = directLevelKeys.find((key) => typeof live[key] === "string");
+    if (directLevelKey) value = live[directLevelKey];
+    else return "unknown";
+  }
+
+  if (typeof value === "string") {
+    const state = value.trim().toLowerCase().replace(/[\\s-]+/g, "_");
+    if (["empty", "not_available", "not_present", "low", "dry"].includes(state)) return "empty";
+    if (["available", "present", "ok", "normal", "full", "detected", "occupied", "not_empty"].includes(state)) return "available";
+    return "unknown";
+  }
+  if (!value || typeof value !== "object") return "unknown";
+  if (typeof value.empty === "boolean") return value.empty ? "empty" : "available";
+  if (typeof value.isEmpty === "boolean") return value.isEmpty ? "empty" : "available";
+  if (typeof value.available === "boolean") return value.available ? "available" : "empty";
+  if (typeof value.present === "boolean") return value.present ? "available" : "empty";
+  if (typeof value.detected === "boolean") return value.detected ? "available" : "empty";
+  if (typeof value.status === "string") return getMaterialSensorStatus({ materialSensors: { [sensorKey]: value.status } }, sensorKey);
+  if (typeof value.state === "string") return getMaterialSensorStatus({ materialSensors: { [sensorKey]: value.state } }, sensorKey);
+  if (typeof value.level === "string") return getMaterialSensorStatus({ materialSensors: { [sensorKey]: value.level } }, sensorKey);
+  return "unknown";
+}
+
+function getNotificationCategory(item) {
+  const text = [
+    item.category, item.eventType, item.type, item.title, item.event,
+    item.message, item.description, item.details
+  ].filter(Boolean).join(" ").toLowerCase().replace(/[_-]+/g, " ");
+
+  if (/emergency stop|e stop|estop|emergency halt/.test(text)) return "emergency_stop";
+  if (/over temperature|overtemp|over temp|temperature too high|high temperature|temperature limit/.test(text)) return "over_temperature";
+  if (/empty chamber|chamber empty|dehydrator chamber empty/.test(text)) return "empty_chamber";
+  if (/no molder|no mould|molder missing|mould(er)? missing|zero molders/.test(text)) return "no_molder";
+  if (/batch done|batch complete|batch completed|production complete|cycle complete/.test(text)) return "batch_done";
+  if (/empty material|material empty|water is empty|water tank empty|vinegar is empty|vinegar tank empty|glycerin is empty|glycerin tank empty|corn starch is empty|corn starch empty|reservoir empty/.test(text)) return "empty_material";
+  if (/malfunction|fault|failure|system error|machine error/.test(text)) return "malfunction";
+
+  const type = String(item.type || item.level || "").toLowerCase();
+  if (type.includes("warn") || type.includes("error") || type.includes("fault")) return "malfunction";
+  if (type.includes("complete") || type.includes("success")) return "batch_done";
+  return "other";
+}
+
+function notificationCategoryLabel(category) {
+  return NOTIFICATION_FILTERS.find((entry) => entry.value === category)?.label || "Other / general";
+}
 
 function getCurrentStepIndex(live) {
   if (!live) return null;
@@ -178,6 +280,9 @@ export default function App() {
   const [historyPage, setHistoryPage] = useState(1);
   const [deletingHistoryId, setDeletingHistoryId] = useState(null);
   const [historyActionError, setHistoryActionError] = useState("");
+  const [notificationFilter, setNotificationFilter] = useState("all");
+  const [notificationActionError, setNotificationActionError] = useState("");
+  const [notificationBusyKey, setNotificationBusyKey] = useState(null);
   const [batchCountPeriod, setBatchCountPeriod] = useState("day");
   const [moldersPeriod, setMoldersPeriod] = useState("day");
   const [currentPassword, setCurrentPassword] = useState("");
@@ -189,7 +294,17 @@ export default function App() {
 
   const demoMode = !isFirebaseConfigured;
   const isAdmin = Boolean(user);
-  const unreadCount = notifications.filter((n) => !n.read).length;
+  const materialSensorStates = useMemo(
+    () => MATERIAL_SENSORS.map((sensor) => ({ ...sensor, status: getMaterialSensorStatus(live, sensor.key) })),
+    [live]
+  );
+  const materialSensorSignature = materialSensorStates.map((sensor) => sensor.key + ":" + sensor.status).join("|");
+  const visibleNotifications = useMemo(
+    () => notifications.filter((item) => !item.systemRecord && !item._systemRecord &&
+      (notificationFilter === "all" || getNotificationCategory(item) === notificationFilter)),
+    [notifications, notificationFilter]
+  );
+  const unreadCount = notifications.filter((n) => !n.read && !n.systemRecord && !n._systemRecord).length;
   const currentStatus = live?.status || live?.currentState || "Waiting for device";
   const machineOnline = demoMode ? true : Boolean(live && (live.online === true || live.isOnline === true));
   const explicitPowerState = [
@@ -346,6 +461,62 @@ export default function App() {
   }, [isAdmin]);
 
   useEffect(() => {
+    if (!db || !isAdmin) return undefined;
+    let cancelled = false;
+
+    async function syncMaterialNotifications() {
+      try {
+        const snapshot = await get(ref(db, "ecopeel/notifications"));
+        if (cancelled) return;
+        const rows = normalizeList(snapshot.val()).filter((row) => !row.systemRecord && !row._systemRecord);
+
+        for (const sensor of materialSensorStates) {
+          if (cancelled) return;
+          const related = rows.filter((row) => row.autoGenerated === true && row.materialKey === sensor.key);
+          const activeAlert = related.find((row) => row.active !== false);
+          if (sensor.status === "empty" && !activeAlert) {
+            const created = await push(ref(db, "ecopeel/notifications"), {
+              title: sensor.label + " is empty",
+              message: "The " + sensor.label.toLowerCase() + " sensor reports an empty supply. Refill or replenish it before starting the relevant process.",
+              type: "empty_material",
+              category: "empty_material",
+              materialKey: sensor.key,
+              autoGenerated: true,
+              active: true,
+              createdAt: Date.now(),
+              read: false
+            });
+            if (created?.key) {
+              rows.push({
+                id: created.key,
+                firebaseKey: created.key,
+                title: sensor.label + " is empty",
+                type: "empty_material",
+                category: "empty_material",
+                materialKey: sensor.key,
+                autoGenerated: true,
+                active: true
+              });
+            }
+          } else if (sensor.status === "available" && activeAlert) {
+            await update(ref(db, "ecopeel/notifications/" + activeAlert.firebaseKey), {
+              active: false,
+              resolvedAt: Date.now()
+            });
+            activeAlert.active = false;
+          }
+        }
+      } catch {
+        // The public page remains read-only. Auto-generated alerts need an authorized admin session;
+        // the ESP32 should also send sensor-empty notifications for unattended operation.
+      }
+    }
+
+    syncMaterialNotifications();
+    return () => { cancelled = true; };
+  }, [isAdmin, materialSensorSignature]);
+
+  useEffect(() => {
     if (!auth) return undefined;
     let active = true;
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
@@ -472,6 +643,39 @@ export default function App() {
     }
   }
 
+  async function handleNotificationAction(item, action) {
+    const recordKey = item.firebaseKey ?? item.id;
+    if (recordKey === undefined || recordKey === null || recordKey === "") {
+      setNotificationActionError("Could not identify this notification record.");
+      return;
+    }
+    if (action === "delete" && !window.confirm(`Delete notification "${item.title || item.event || "Machine update"}"? This cannot be undone.`)) return;
+
+    const busyKey = String(recordKey);
+    setNotificationBusyKey(busyKey);
+    setNotificationActionError("");
+    try {
+      if (demoMode && !db) {
+        if (action === "read") {
+          setNotifications((current) => current.map((row) => (row.id === item.id ? { ...row, read: true } : row)));
+        } else {
+          setNotifications((current) => current.filter((row) => row.id !== item.id));
+        }
+      } else {
+        if (!db || !isAdmin) throw new Error("Admin access is required to modify notifications.");
+        const recordRef = ref(db, "ecopeel/notifications/" + recordKey);
+        if (action === "read") await update(recordRef, { read: true });
+        else await remove(recordRef);
+      }
+    } catch {
+      setNotificationActionError(action === "read"
+        ? "Could not mark this notification as read. Check admin Firebase write permissions."
+        : "Could not delete this notification. Check admin Firebase write permissions.");
+    } finally {
+      setNotificationBusyKey(null);
+    }
+  }
+
   async function handleDeleteHistory(row) {
     const recordKey = row.firebaseKey ?? row.id;
     if (!db || !isAdmin || recordKey === undefined || recordKey === null || recordKey === "") {
@@ -517,6 +721,7 @@ export default function App() {
   const navItems = [
     { id: "dashboard", label: "Live dashboard", icon: LayoutDashboard, section: "MONITORING" },
     { id: "machine", label: "Machine status", icon: Factory },
+    { id: "sensors", label: "Material sensors", icon: Gauge },
     { id: "notifications", label: "Notifications", icon: Bell, count: unreadCount },
     ...(isAdmin ? [
       { id: "history", label: "Production history", icon: History, section: "ADMINISTRATION" },
@@ -571,7 +776,7 @@ export default function App() {
         <header className="topbar">
           <div className="topbar-left">
             <button className="icon-button menu-button" aria-label="Open menu" onClick={() => setSidebarOpen(true)}><Menu size={21} /></button>
-            <div className="breadcrumbs"><span>EcoPeel</span><ChevronRight size={14} /><strong>{page === "dashboard" ? "Live dashboard" : page === "machine" ? "Machine status" : page === "notifications" ? "Notifications" : page === "history" ? "Production history" : page === "change-password" ? "Change password" : "Admin sign in"}</strong></div>
+            <div className="breadcrumbs"><span>EcoPeel</span><ChevronRight size={14} /><strong>{page === "dashboard" ? "Live dashboard" : page === "machine" ? "Machine status" : page === "sensors" ? "Material sensors" : page === "notifications" ? "Notifications" : page === "history" ? "Production history" : page === "change-password" ? "Change password" : "Admin sign in"}</strong></div>
           </div>
           <div className="topbar-right">
             <div className="updated-label"><span className={"connection-dot " + (machineOnline ? "" : "offline")} />{demoMode ? "Preview environment" : machineOnline ? "Device connected" : "Waiting for device"}</div>
@@ -694,11 +899,62 @@ export default function App() {
           </div>
         )}
 
+        {page === "sensors" && (
+          <div className="page-content">
+            <div className="page-heading">
+              <div><div className="eyebrow">INGREDIENT MONITORING</div><h1>Material sensors</h1><p>Check whether each raw material supply is empty or available.</p></div>
+              <span className="date-chip"><Gauge size={15} /> 4 sensors</span>
+            </div>
+            <div className="sensor-status-note">
+              <Activity size={16} />
+              <span>States come from the controller's Firebase live data. “Waiting for data” means the ESP32 has not published a recognized sensor state yet.</span>
+            </div>
+            <div className="material-sensor-grid">
+              {materialSensorStates.map((sensor) => {
+                const isEmpty = sensor.status === "empty";
+                const isAvailable = sensor.status === "available";
+                const stateLabel = isEmpty ? "Empty" : isAvailable ? "Available" : "Waiting for data";
+                const stateTone = isEmpty ? "warning" : isAvailable ? "success" : "neutral";
+                const SensorIcon = sensor.Icon;
+                return <article key={sensor.key} className={"material-sensor-card " + (isEmpty ? "is-empty" : isAvailable ? "is-available" : "is-unknown")}>
+                  <div className={"material-sensor-icon " + (isEmpty ? "warning" : isAvailable ? "success" : "")}><SensorIcon size={21} strokeWidth={1.9} /></div>
+                  <div className="material-sensor-main">
+                    <span className="material-sensor-label">{sensor.label}</span>
+                    <div className="material-sensor-state"><StatusPill tone={stateTone}>{stateLabel}</StatusPill></div>
+                    <p>{sensor.sensorType}</p>
+                  </div>
+                  <span className="material-sensor-state-copy">{isEmpty ? "Refill required" : isAvailable ? "Supply detected" : "No status received"}</span>
+                </article>;
+              })}
+            </div>
+            <section className="panel sensor-instructions-panel">
+              <div className="panel-header"><div><h3>Sensor mapping</h3><p>Expected live-data fields</p></div></div>
+              <div className="sensor-mapping-list">
+                <div><strong>Water, vinegar, glycerin</strong><span>Non-contact liquid sensors</span></div>
+                <div><strong>Corn starch</strong><span>IR presence sensor</span></div>
+                <div><strong>Firebase path</strong><code>ecopeel/live/materialSensors/</code></div>
+              </div>
+              {materialSensorStates.some((sensor) => sensor.status === "empty") && <div className="sensor-empty-banner"><AlertTriangle size={16} /><span>An empty material sensor has been detected. An empty-material notification is created when an administrator session is active; the ESP32 should also write this event so it is recorded even when the website is closed.</span></div>}
+            </section>
+            <div className="page-footer"><span>Sensor readings are status indicators, not a replacement for physical inspection.</span><span><ShieldCheck size={14} /> Read-only monitoring</span></div>
+          </div>
+        )}
+
         {page === "notifications" && (
           <div className="page-content">
-            <div className="page-heading"><div><div className="eyebrow">SYSTEM MESSAGES</div><h1>Notifications</h1><p>Review process events, warnings, and machine updates.</p></div><div className="notification-count-card"><Bell size={17} /><strong>{unreadCount}</strong><span>unread</span></div></div>
-            <section className="panel notifications-page-panel"><div className="panel-header"><div><h3>All notifications</h3><p>{notifications.length} notification record{notifications.length === 1 ? "" : "s"}</p></div></div>{notifications.length ? <div className="notification-list">{notifications.map((item) => <NotificationRow key={item.id} item={item} expanded />)}</div> : <EmptyState title="No notifications yet" text="When the controller or ESP32 records a notification in Firebase, it will be listed here." />}</section>
-            <div className="page-footer"><span>Notifications are currently read-only.</span><span><Bell size={14} /> {demoMode ? "Example messages" : "Firebase notification stream"}</span></div>
+            <div className="page-heading">
+              <div><div className="eyebrow">SYSTEM MESSAGES</div><h1>Notifications</h1><p>Filter machine events, review alerts, and manage read notifications.</p></div>
+              <div className="notification-count-card"><Bell size={17} /><strong>{unreadCount}</strong><span>unread</span></div>
+            </div>
+            <section className="panel notifications-page-panel">
+              <div className="panel-header notification-panel-header">
+                <div><h3>All notifications</h3><p>{visibleNotifications.length} matching record{visibleNotifications.length === 1 ? "" : "s"} · {unreadCount} unread</p></div>
+                <label className="notification-type-filter"><span>Type</span><select className="filter-select" aria-label="Filter notifications by type" value={notificationFilter} onChange={(event) => setNotificationFilter(event.target.value)}>{NOTIFICATION_FILTERS.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}</select></label>
+              </div>
+              {notificationActionError && <div className="history-action-error" role="alert"><AlertTriangle size={15} /><span>{notificationActionError}</span></div>}
+              {visibleNotifications.length ? <div className="notification-list">{visibleNotifications.map((item) => <NotificationRow key={item.firebaseKey || item.id} item={item} expanded isAdmin={isAdmin} busy={notificationBusyKey === String(item.firebaseKey ?? item.id)} onMarkRead={() => handleNotificationAction(item, "read")} onDelete={() => handleNotificationAction(item, "delete")} />)}</div> : <EmptyState title="No matching notifications" text={notificationFilter === "all" ? "When the controller or ESP32 records a notification in Firebase, it will be listed here." : "No notifications match this type yet."} />}
+            </section>
+            <div className="page-footer"><span>{isAdmin ? "Administrators can mark alerts as read or delete records." : "Notification actions are available to authenticated administrators."}</span><span><Bell size={14} /> {demoMode ? "Example messages" : "Firebase notification stream"}</span></div>
           </div>
         )}
 
@@ -902,15 +1158,35 @@ export default function App() {
   );
 }
 
-function NotificationRow({ item, expanded = false }) {
-  const type = String(item.type || item.level || "info").toLowerCase();
-  const Icon = type.includes("warn") || type.includes("fault") || type.includes("error") ? AlertTriangle : type.includes("success") || type.includes("complete") ? CheckCircle2 : Bell;
-  const tone = type.includes("warn") || type.includes("fault") || type.includes("error") ? "warning" : type.includes("success") || type.includes("complete") ? "success" : "info";
+function NotificationRow({ item, expanded = false, isAdmin = false, busy = false, onMarkRead, onDelete }) {
+  const category = getNotificationCategory(item);
+  const Icon = category === "batch_done" ? CheckCircle2
+    : category === "no_molder" ? Layers
+      : category === "emergency_stop" ? Power
+        : category === "empty_material" || category === "empty_chamber" ? Droplet
+          : category === "over_temperature" || category === "malfunction" ? AlertTriangle
+            : Bell;
+  const tone = ["malfunction", "emergency_stop", "empty_chamber", "no_molder", "over_temperature", "empty_material"].includes(category)
+    ? "warning"
+    : category === "batch_done" ? "success" : "info";
   return (
-    <div className={"notification-row " + (!item.read ? "unread" : "")}>
+    <div className={"notification-row " + (!item.read ? "unread" : "") + (item.active === false ? " resolved" : "")}>
       <div className={"notification-icon " + tone}><Icon size={17} /></div>
-      <div className="notification-content"><div className="notification-title-line"><strong>{item.title || item.event || "Machine update"}</strong>{!item.read && <span className="unread-dot" />}</div><p>{item.message || item.description || item.details || "A machine event was recorded."}</p>{expanded && item.details && item.message && <small>{item.details}</small>}</div>
+      <div className="notification-content">
+        <div className="notification-title-line">
+          <strong>{item.title || item.event || "Machine update"}</strong>
+          {!item.read && <span className="unread-dot" />}
+          <span className={"notification-category-pill " + tone}>{notificationCategoryLabel(category)}</span>
+          {item.active === false && <span className="notification-resolved-pill">Resolved</span>}
+        </div>
+        <p>{item.message || item.description || item.details || "A machine event was recorded."}</p>
+        {expanded && item.details && item.message && <small>{item.details}</small>}
+      </div>
       <time>{relativeTime(item.createdAt || item.timestamp)}</time>
+      {expanded && isAdmin && <div className="notification-actions">
+        {!item.read && <button type="button" className="notification-action-button mark-read" disabled={busy} onClick={onMarkRead} title="Mark as read" aria-label="Mark notification as read"><Check size={14} /><span>Mark read</span></button>}
+        <button type="button" className="notification-action-button delete-notification" disabled={busy} onClick={onDelete} title="Delete notification" aria-label="Delete notification"><Trash2 size={14} /><span>Delete</span></button>
+      </div>}
     </div>
   );
 }
