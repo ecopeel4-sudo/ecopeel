@@ -283,6 +283,7 @@ export default function App() {
   const [notificationFilter, setNotificationFilter] = useState("all");
   const [notificationActionError, setNotificationActionError] = useState("");
   const [notificationBusyKey, setNotificationBusyKey] = useState(null);
+  const [markingAllRead, setMarkingAllRead] = useState(false);
   const [batchCountPeriod, setBatchCountPeriod] = useState("day");
   const [moldersPeriod, setMoldersPeriod] = useState("day");
   const [currentPassword, setCurrentPassword] = useState("");
@@ -676,6 +677,37 @@ export default function App() {
     }
   }
 
+  async function handleMarkAllNotificationsRead() {
+    const unread = notifications.filter((item) => !item.read && !item.systemRecord && !item._systemRecord);
+    if (!unread.length || markingAllRead) return;
+
+    setMarkingAllRead(true);
+    setNotificationActionError("");
+    try {
+      if (demoMode && !db) {
+        setNotifications((current) => current.map((item) =>
+          !item.systemRecord && !item._systemRecord ? { ...item, read: true } : item
+        ));
+        return;
+      }
+
+      if (!db || !isAdmin) throw new Error("Admin access is required to modify notifications.");
+      const updates = {};
+      for (const item of unread) {
+        const recordKey = item.firebaseKey ?? item.id;
+        if (recordKey !== undefined && recordKey !== null && String(recordKey) !== "") {
+          updates[String(recordKey) + "/read"] = true;
+        }
+      }
+      if (!Object.keys(updates).length) throw new Error("No writable notification records were found.");
+      await update(ref(db, "ecopeel/notifications"), updates);
+    } catch {
+      setNotificationActionError("Could not mark all notifications as read. Check admin Firebase write permissions and try again.");
+    } finally {
+      setMarkingAllRead(false);
+    }
+  }
+
   async function handleDeleteHistory(row) {
     const recordKey = row.firebaseKey ?? row.id;
     if (!db || !isAdmin || recordKey === undefined || recordKey === null || recordKey === "") {
@@ -952,7 +984,13 @@ export default function App() {
             <section className="panel notifications-page-panel">
               <div className="panel-header notification-panel-header">
                 <div><h3>All notifications</h3><p>{visibleNotifications.length} matching record{visibleNotifications.length === 1 ? "" : "s"} · {unreadCount} unread</p></div>
-                <label className="notification-type-filter"><span>Type</span><select className="filter-select" aria-label="Filter notifications by type" value={notificationFilter} onChange={(event) => setNotificationFilter(event.target.value)}>{NOTIFICATION_FILTERS.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}</select></label>
+                <div className="notification-header-tools">
+                  {isAdmin && unreadCount > 0 && <button type="button" className="notification-action-button mark-read notification-mark-all-button" disabled={markingAllRead} onClick={handleMarkAllNotificationsRead} title="Mark all notifications as read">
+                    {markingAllRead ? <span className="notification-button-spinner" /> : <Check size={14} />}
+                    <span>{markingAllRead ? "Marking..." : "Mark all as read"}</span>
+                  </button>}
+                  <label className="notification-type-filter"><span>Type</span><select className="filter-select" aria-label="Filter notifications by type" value={notificationFilter} onChange={(event) => setNotificationFilter(event.target.value)}>{NOTIFICATION_FILTERS.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}</select></label>
+                </div>
               </div>
               {notificationActionError && <div className="history-action-error" role="alert"><AlertTriangle size={15} /><span>{notificationActionError}</span></div>}
               {visibleNotifications.length ? <div className="notification-list">{visibleNotifications.map((item) => <NotificationRow key={item.firebaseKey || item.id} item={item} expanded isAdmin={isAdmin} busy={notificationBusyKey === String(item.firebaseKey ?? item.id)} onMarkRead={() => handleNotificationAction(item, "read")} onDelete={() => handleNotificationAction(item, "delete")} />)}</div> : <EmptyState title="No matching notifications" text={notificationFilter === "all" ? "When the controller or ESP32 records a notification in Firebase, it will be listed here." : "No notifications match this type yet."} />}
