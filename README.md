@@ -54,6 +54,7 @@ Suggested \`ecopeel/live\` fields:
 \`\`\`json
 {
   "status": "Dehydrating",
+  "machineOn": true,
   "currentStep": "Dehydrating",
   "progress": 60,
   "temperature": 58.5,
