@@ -13,7 +13,7 @@ import {
   EmailAuthProvider, onAuthStateChanged, reauthenticateWithCredential,
   signInWithEmailAndPassword, signOut, updatePassword
 } from "firebase/auth";
-import { onValue, ref } from "firebase/database";
+import { get, onValue, ref } from "firebase/database";
 import { auth, db, isFirebaseConfigured } from "./firebase.js";
 
 const DEMO_LIVE = {
@@ -226,27 +226,35 @@ export default function App() {
 
   useEffect(() => {
     if (!auth) return undefined;
+    let active = true;
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       if (!firebaseUser) {
-        setUser(null);
-        setAuthChecking(false);
+        if (active) {
+          setUser(null);
+          setAuthChecking(false);
+        }
         return;
       }
       try {
-        const result = await firebaseUser.getIdTokenResult();
-        if (result.claims.admin === true) {
+        if (!db) throw new Error("Database not configured");
+        const adminSnapshot = await get(ref(db, "ecopeel/admins/" + firebaseUser.uid));
+        if (!active) return;
+        if (adminSnapshot.val() === true) {
           setUser(firebaseUser);
         } else {
           setUser(null);
           await signOut(auth);
         }
       } catch {
-        setUser(null);
+        if (active) setUser(null);
       } finally {
-        setAuthChecking(false);
+        if (active) setAuthChecking(false);
       }
     });
-    return unsubscribe;
+    return () => {
+      active = false;
+      unsubscribe();
+    };
   }, []);
 
   async function handleLogin(event) {
@@ -263,8 +271,13 @@ export default function App() {
     setLoginBusy(true);
     try {
       const credential = await signInWithEmailAndPassword(auth, loginIdentifier.trim(), password);
-      const result = await credential.user.getIdTokenResult(true);
-      if (result.claims.admin !== true) {
+      if (!db) {
+        await signOut(auth);
+        setLoginError("Firebase Realtime Database is not configured.");
+        return;
+      }
+      const adminSnapshot = await get(ref(db, "ecopeel/admins/" + credential.user.uid));
+      if (adminSnapshot.val() !== true) {
         await signOut(auth);
         setLoginError("This account is not authorized as an EcoPeel administrator.");
         return;
