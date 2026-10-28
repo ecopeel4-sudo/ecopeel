@@ -643,17 +643,17 @@ export default function App() {
                   <option value="year">This year</option>
                 </select>
               </div>
-              <div className="production-count-body">
-                <div className="production-count-icon"><Factory size={22} strokeWidth={1.8} /></div>
-                <div className="production-count-copy">
-                  <div className="production-count-number">{productionBatchCount}</div>
-                  <strong>{batchCountPeriod === "day" ? "Today" : batchCountPeriod === "week" ? "This week" : batchCountPeriod === "month" ? "This month" : "This year"}</strong>
-                  <p>{productionBatchCount === 1 ? "completed batch" : "completed batches"} recorded in Philippine time</p>
+              <div className="production-summary-grid">
+                <div className="production-supporting-metric is-primary">
+                  <div className="production-supporting-icon"><Factory size={20} strokeWidth={1.9} /></div>
+                  <div className="production-supporting-copy">
+                    <span className="production-supporting-label">Completed batches</span>
+                    <div className="production-supporting-value">{productionBatchCount}</div>
+                    <span className="production-supporting-caption">{batchCountPeriod === "day" ? "Today" : batchCountPeriod === "week" ? "This week" : batchCountPeriod === "month" ? "This month" : "This year"} · Philippine time</span>
+                  </div>
                 </div>
-              </div>
-              <div className="production-supporting-metrics">
                 <div className="production-supporting-metric">
-                  <div className="production-supporting-icon success"><CheckCircle2 size={18} strokeWidth={1.9} /></div>
+                  <div className="production-supporting-icon"><CheckCircle2 size={20} strokeWidth={1.9} /></div>
                   <div className="production-supporting-copy">
                     <span className="production-supporting-label">Success rate</span>
                     <div className="production-supporting-value">{history.length ? Math.round(history.filter((r) => String(r.status).toLowerCase() === "completed").length / history.length * 100) : "—"}<small>{history.length ? "%" : ""}</small></div>
@@ -661,15 +661,15 @@ export default function App() {
                   </div>
                 </div>
                 <div className="production-supporting-metric">
-                  <div className="production-supporting-icon blue"><Factory size={18} strokeWidth={1.9} /></div>
+                  <div className="production-supporting-icon blue"><Factory size={20} strokeWidth={1.9} /></div>
                   <div className="production-supporting-copy">
                     <span className="production-supporting-label">Total molders</span>
                     <div className="production-supporting-value">{history.reduce((sum, r) => sum + Number(r.molders || r.loadedMolders || 0), 0)}</div>
-                    <span className="production-supporting-caption">Across visible history</span>
+                    <span className="production-supporting-caption">Across recorded batches</span>
                   </div>
                 </div>
                 <div className="production-supporting-metric">
-                  <div className="production-supporting-icon purple"><Clock3 size={18} strokeWidth={1.9} /></div>
+                  <div className="production-supporting-icon purple"><Clock3 size={20} strokeWidth={1.9} /></div>
                   <div className="production-supporting-copy">
                     <span className="production-supporting-label">Average batch duration</span>
                     <div className="production-supporting-value">{history.length ? Math.round(history.reduce((sum, r) => sum + Number(r.durationMinutes || 0), 0) / history.length) : "—"}<small>{history.length ? " min" : ""}</small></div>
