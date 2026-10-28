@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import {
   Activity, AlertTriangle, Bell, CheckCircle2, ChevronDown, ChevronRight,
   CircleHelp, Clock3, Droplet, Factory, Gauge, History, LayoutDashboard,
-  Banana, LogIn, LogOut, Menu, ShieldCheck, Thermometer, TrendingUp, Wifi,
+  Banana, LogIn, LogOut, Menu, Power, ShieldCheck, Thermometer, TrendingUp, Wifi,
   WifiOff, Wind, X
 } from "lucide-react";
 import {
@@ -18,6 +18,7 @@ import { auth, db, isFirebaseConfigured } from "./firebase.js";
 
 const DEMO_LIVE = {
   status: "Dehydrating",
+  machineOn: true,
   currentStep: "Dehydration cycle",
   progress: 68,
   temperature: 62.4,
@@ -140,6 +141,25 @@ export default function App() {
   const unreadCount = notifications.filter((n) => !n.read).length;
   const currentStatus = live?.status || live?.currentState || "Waiting for device";
   const machineOnline = demoMode ? true : Boolean(live && (live.online === true || live.isOnline === true));
+  const explicitPowerState = [
+    live?.machineOn, live?.isMachineOn, live?.powerOn, live?.isOn
+  ].find((value) => typeof value === "boolean");
+  const reportedMachineState = String(
+    live?.machineState || live?.currentState || live?.status || live?.process || ""
+  ).trim().toLowerCase();
+  const activeProcessText = String(
+    live?.currentStep || live?.process || live?.status || live?.currentState || ""
+  ).trim().toLowerCase();
+  const machinePowerOn = typeof explicitPowerState === "boolean"
+    ? explicitPowerState
+    : !live || !reportedMachineState
+      ? null
+      : /^(off|machine off|stopped|stop|idle|standby|shutdown|shut down|not running|emergency stop|e-stop|estop)$/.test(reportedMachineState)
+        ? false
+        : /^(on|machine on|running|operating|active)$/.test(reportedMachineState) ||
+          ["grind", "dispens", "mix", "cook", "molder", "dehydrat", "transfer"].some((term) => activeProcessText.includes(term))
+          ? true
+          : null;
   const currentProgress = Math.min(100, Math.max(0, Number(live?.progress || 0)));
   const visibleHistory = useMemo(
     () => historyFilter === "All" ? history : history.filter((item) => String(item.status || "").toLowerCase() === historyFilter.toLowerCase()),
@@ -397,7 +417,12 @@ export default function App() {
               <div className="overview-stat"><span>Current state</span><strong>{currentStatus}</strong></div>
               <div className="overview-stat"><span>Current process</span><strong>{live?.currentStep || live?.process || (live ? currentStatus : "No data yet")}</strong></div>
               <div className="overview-stat"><span>Last update</span><strong>{live ? relativeTime(live.updatedAt || live.timestamp) : "No update yet"}</strong></div>
-              <div className="overview-end"><StatusPill tone={machineOnline ? "success" : "warning"}>{demoMode ? "Demo online" : machineOnline ? "Online" : "Offline"}</StatusPill></div>
+              <div className="overview-power">
+                <Power size={17} />
+                <div><span>Machine power</span><strong>{machinePowerOn === null ? "Unknown" : machinePowerOn ? "ON" : "OFF"}</strong></div>
+                <StatusPill tone={machinePowerOn === null ? "neutral" : machinePowerOn ? "success" : "warning"}>{machinePowerOn === null ? "No state" : machinePowerOn ? "Running" : "Stopped"}</StatusPill>
+              </div>
+              <div className="overview-end"><StatusPill tone={machineOnline ? "success" : "warning"}>{demoMode ? "Demo online" : machineOnline ? "Device online" : "Device offline"}</StatusPill></div>
             </div>
 
             <div className="section-heading"><div><h2>Live sensor readings</h2><p>Key temperatures and environmental conditions</p></div><span className="section-note"><span className="live-dot" /> Live data</span></div>
@@ -451,7 +476,7 @@ export default function App() {
         {page === "machine" && (
           <div className="page-content">
             <div className="page-heading"><div><div className="eyebrow">DEVICE DETAILS</div><h1>Machine status</h1><p>Current operating state and sensor health for the EcoPeel machine.</p></div><StatusPill tone={machineOnline ? "success" : "warning"}>{demoMode ? "Demo environment" : machineOnline ? "Connected" : "Waiting for device"}</StatusPill></div>
-            <div className="status-summary-card"><div className="machine-status-emblem"><Factory size={28} /></div><div className="machine-status-main"><span className="metric-label">CURRENT MACHINE STATE</span><h2>{currentStatus}</h2><p>{live?.currentStep || live?.process || "Waiting for process state data."}</p></div><div className="machine-status-meta"><span>Latest update</span><strong>{live ? formatDate(live.updatedAt || live.timestamp) : "No data received"}</strong><StatusPill tone={machineOnline ? "success" : "warning"}>{machineOnline ? "Connected" : "Offline"}</StatusPill></div></div>
+            <div className="status-summary-card"><div className="machine-status-emblem"><Factory size={28} /></div><div className="machine-status-main"><span className="metric-label">CURRENT MACHINE STATE</span><h2>{currentStatus}</h2><p>{live?.currentStep || live?.process || "Waiting for process state data."}</p></div><div className="machine-status-meta"><span>Machine power</span><strong className={"power-reading " + (machinePowerOn === true ? "is-on" : machinePowerOn === false ? "is-off" : "is-unknown")}>{machinePowerOn === null ? "Unknown" : machinePowerOn ? "ON" : "OFF"}</strong><span>Device connection</span><StatusPill tone={machineOnline ? "success" : "warning"}>{machineOnline ? "Connected" : "Offline"}</StatusPill><small className="machine-updated">{live ? formatDate(live.updatedAt || live.timestamp) : "No data received"}</small></div></div>
             <div className="section-heading"><div><h2>Operating sensors</h2><p>Values reported by the controller</p></div></div>
             <div className="metric-grid"><MetricCard icon={Thermometer} label="Mixing temperature" value={live?.temperature ?? live?.mixingTemperature ?? "—"} unit={live?.temperature != null || live?.mixingTemperature != null ? "°C" : ""} caption="DS18B20 / cooking vessel" /><MetricCard icon={Thermometer} label="Dehydrator temperature" value={live?.dehydratorTemperature ?? "—"} unit={live?.dehydratorTemperature != null ? "°C" : ""} caption="Dehydrator chamber" tone="orange" /><MetricCard icon={Droplet} label="Humidity" value={live?.humidity ?? "—"} unit={live?.humidity != null ? "%" : ""} caption="Dehydrator chamber" tone="blue" /><MetricCard icon={Gauge} label="Process progress" value={live ? currentProgress : "—"} unit={live ? "%" : ""} caption="Current batch" tone="purple" /></div>
             <div className="panel workflow-full-panel"><div className="panel-header"><div><h3>Production sequence</h3><p>Process states reported or expected by the machine controller</p></div></div><div className="full-process-grid">{PROCESS_STEPS.map((step, i) => <div key={step} className="full-process-card"><span className="full-step-index">0{i + 1}</span><strong>{step}</strong><span className="full-step-status">{String(live?.currentStep || live?.process || live?.status || "").toLowerCase().includes(step.toLowerCase().split(" ")[0]) ? "Current stage" : "Awaiting status mapping"}</span></div>)}</div></div>
