@@ -230,7 +230,9 @@ h1 { font: 800 clamp(23px, 2vw, 29px)/1.22 Manrope, sans-serif; letter-spacing: 
 .production-supporting-icon { display: grid; place-items: center; width: 40px; height: 40px; flex: 0 0 40px; border-radius: 10px; background: #edf5eb; color: #39784a; }
 .production-supporting-icon.blue { background: #eaf3fc; color: #5289be; }
 .production-supporting-icon.purple { background: #f0edfb; color: #8170bd; }
-.production-supporting-copy { min-width: 0; }
+.production-supporting-copy { min-width: 0; flex: 1; }
+.production-metric-heading { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
+.production-period-select { max-width: 118px; min-width: 92px; padding: 6px 20px 6px 8px; font-size: 9px; flex: 0 0 auto; }
 .production-supporting-label { display: block; color: #7b877c; font-size: 10px; font-weight: 600; line-height: 1.45; }
 .production-supporting-value { color: #2d3e30; font: 800 25px/1.2 Manrope, sans-serif; letter-spacing: -.5px; margin-top: 5px; overflow-wrap: anywhere; }
 .production-supporting-value small { font: 600 11px 'DM Sans', sans-serif; color: #879287; letter-spacing: 0; margin-left: 4px; }
@@ -305,6 +307,7 @@ h1 { font: 800 clamp(23px, 2vw, 29px)/1.22 Manrope, sans-serif; letter-spacing: 
   .production-count-header .filter-select { max-width: 132px; }
   .production-summary-grid { grid-template-columns: 1fr; gap: 9px; }
   .production-supporting-metric { min-height: 88px; padding: 13px; }
+  .production-period-select { max-width: 108px; min-width: 84px; }
   .production-supporting-icon { width: 36px; height: 36px; flex-basis: 36px; }
   .chart-wrap { height: 260px; }
   .heading-actions .date-chip { display: none; }
