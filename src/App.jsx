@@ -264,6 +264,7 @@ function EmptyState({ title, text }) {
 export default function App() {
   const [page, setPage] = useState("dashboard");
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [helpOpen, setHelpOpen] = useState(false);
   const [live, setLive] = useState(isFirebaseConfigured ? null : DEMO_LIVE);
   const [notifications, setNotifications] = useState(isFirebaseConfigured ? [] : DEMO_NOTIFICATIONS);
   const [history, setHistory] = useState(isFirebaseConfigured ? [] : DEMO_HISTORY);
@@ -295,6 +296,16 @@ export default function App() {
 
   const demoMode = !isFirebaseConfigured;
   const isAdmin = Boolean(user);
+
+  useEffect(() => {
+    if (!helpOpen) return undefined;
+    const closeOnEscape = (event) => {
+      if (event.key === "Escape") setHelpOpen(false);
+    };
+    window.addEventListener("keydown", closeOnEscape);
+    return () => window.removeEventListener("keydown", closeOnEscape);
+  }, [helpOpen]);
+
   const materialSensorStates = useMemo(
     () => MATERIAL_SENSORS.map((sensor) => ({ ...sensor, status: getMaterialSensorStatus(live, sensor.key) })),
     [live]
@@ -794,7 +805,11 @@ export default function App() {
           )}
         </nav>
         <div className="sidebar-bottom">
-          <div className="sidebar-help"><div className="help-icon"><CircleHelp size={18} /></div><div><strong>Need Assistance?</strong><span>View system information</span></div><ChevronRight size={16} /></div>
+          <button type="button" className="sidebar-help" onClick={() => setHelpOpen(true)} aria-haspopup="dialog" aria-expanded={helpOpen}>
+            <div className="help-icon"><CircleHelp size={18} /></div>
+            <div><strong>Need Assistance?</strong><span>View system information</span></div>
+            <ChevronRight size={16} />
+          </button>
           <div className="sidebar-profile">
             <div className="profile-avatar">{isAdmin ? (user.email || "A").slice(0, 1).toUpperCase() : "EP"}</div>
             <div className="profile-details"><strong>{isAdmin ? "EcoPeel Admin" : "Public viewer"}</strong><span>{isAdmin ? "Administrator access" : "Read-only access"}</span></div>
@@ -1190,6 +1205,63 @@ export default function App() {
               <div className="login-security"><ShieldCheck size={16} /><span>Admin access is verified through Firebase Authentication and an administrator custom claim.</span></div>
               <button className="back-link" onClick={() => setPage("dashboard")}>← Back to public dashboard</button>
             </div>
+          </div>
+        )}
+
+        {helpOpen && (
+          <div className="help-dialog-backdrop" role="presentation" onMouseDown={(event) => {
+            if (event.target === event.currentTarget) setHelpOpen(false);
+          }}>
+            <section className="help-dialog" role="dialog" aria-modal="true" aria-labelledby="help-dialog-title">
+              <div className="help-dialog-header">
+                <div className="help-dialog-brand">
+                  <div className="help-dialog-icon"><CircleHelp size={21} /></div>
+                  <div><div className="eyebrow">SUPPORT CENTER</div><h2 id="help-dialog-title">EcoPeel Help &amp; System Information</h2><p>Monitoring Station 01 · Banana-peel bioplastic machine</p></div>
+                </div>
+                <button type="button" className="icon-button help-dialog-close" onClick={() => setHelpOpen(false)} aria-label="Close help panel"><X size={18} /></button>
+              </div>
+
+              <div className="help-dialog-section">
+                <h3>Machine &amp; Connection</h3>
+                <div className="help-system-grid">
+                  <div className="help-system-item"><span>Device Connection</span><strong className={machineOnline ? "help-value-good" : "help-value-warning"}>{demoMode ? "Preview Mode" : machineOnline ? "Connected" : "Waiting for Device"}</strong></div>
+                  <div className="help-system-item"><span>Machine Power</span><strong>{machinePowerOn === null ? "Unknown" : machinePowerOn ? "ON" : "OFF"}</strong></div>
+                  <div className="help-system-item"><span>Current Process</span><strong>{currentStatus}</strong></div>
+                  <div className="help-system-item"><span>Last Device Update</span><strong>{live ? formatDate(live.updatedAt || live.timestamp) : "No data received"}</strong></div>
+                </div>
+              </div>
+
+              <div className="help-dialog-section">
+                <h3>Material Sensor Guide</h3>
+                <div className="help-material-list">
+                  {materialSensorStates.map((sensor) => {
+                    const stateLabel = sensor.status === "empty" ? "Empty" : sensor.status === "available" ? "Available" : "Waiting for data";
+                    return <div className="help-material-row" key={sensor.key}>
+                      <span>{sensor.label}<small>{sensor.sensorType}</small></span>
+                      <StatusPill tone={sensor.status === "empty" ? "warning" : sensor.status === "available" ? "success" : "neutral"}>{stateLabel}</StatusPill>
+                    </div>;
+                  })}
+                </div>
+                <p className="help-note">Empty means refill is needed. Waiting for data means the controller has not sent a recognized status yet.</p>
+              </div>
+
+              <div className="help-dialog-section">
+                <h3>Quick Troubleshooting</h3>
+                <div className="help-troubleshooting-list">
+                  <div><span>01</span><p><strong>Sensor cards say “Waiting for data”</strong>Check that the ESP32 publishes each sensor under <code>ecopeel/live/materialSensors</code> with an <code>empty</code> Boolean.</p></div>
+                  <div><span>02</span><p><strong>Device appears offline</strong>Check the ESP32 power, Wi-Fi connection, and the latest update under <code>ecopeel/live</code>.</p></div>
+                  <div><span>03</span><p><strong>Notifications are missing</strong>Check records under <code>ecopeel/notifications</code> and confirm the controller or ESP32 writes the expected event category.</p></div>
+                </div>
+              </div>
+
+              <div className="help-dialog-footer">
+                <span><Bell size={14} /> {unreadCount} unread notification{unreadCount === 1 ? "" : "s"}</span>
+                <div>
+                  <button type="button" className="help-secondary-button" onClick={() => { setPage("machine"); setHelpOpen(false); setSidebarOpen(false); }}>Machine Status</button>
+                  <button type="button" className="help-primary-button" onClick={() => { setPage("notifications"); setHelpOpen(false); setSidebarOpen(false); }}>View Notifications</button>
+                </div>
+              </div>
+            </section>
           </div>
         )}
 
