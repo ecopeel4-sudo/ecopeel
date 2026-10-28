@@ -330,3 +330,28 @@ h1 { font: 800 clamp(23px, 2vw, 29px)/1.22 Manrope, sans-serif; letter-spacing: 
   .page-footer { flex-direction: column; align-items: flex-start; gap: 7px; }
   .history-panel { padding: 15px 12px; }
 }
+
+
+/* Admin password management */
+.security-layout { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(260px, .8fr); gap: 18px; align-items: start; }
+.security-form-panel { padding: 24px; }
+.security-panel-heading { display: flex; align-items: center; gap: 12px; padding-bottom: 17px; border-bottom: 1px solid #edf1eb; margin-bottom: 9px; }
+.security-panel-icon, .security-info-icon { display: grid; place-items: center; width: 42px; height: 42px; border-radius: 11px; color: #39784a; background: #eaf4e8; flex: 0 0 auto; }
+.security-panel-heading h3, .security-info-panel h3 { color: #334236; font: 800 14px/1.4 Manrope, sans-serif; margin: 0 0 5px; }
+.security-panel-heading p, .security-info-panel p { color: #89948a; font-size: 10px; line-height: 1.6; margin: 0; }
+.password-form { max-width: 560px; }
+.password-form input { width: 100%; }
+.password-hint { display: flex; align-items: flex-start; gap: 8px; color: #859185; font-size: 10px; line-height: 1.6; margin-top: 14px; }
+.password-hint svg { flex: 0 0 auto; color: #67946a; }
+.password-success { display: flex; align-items: flex-start; gap: 8px; padding: 11px; margin-top: 13px; border: 1px solid #d8ead7; color: #347447; background: #eef8ed; border-radius: 8px; font-size: 10px; line-height: 1.5; }
+.password-success svg { flex: 0 0 auto; }
+.security-info-panel { padding: 22px; }
+.security-info-panel .security-info-icon { margin-bottom: 15px; }
+.security-info-panel h3 { margin-bottom: 8px; }
+.security-info-panel p { margin-bottom: 20px; }
+.security-check { display: flex; align-items: center; gap: 8px; color: #667768; font-size: 10px; line-height: 1.5; padding: 10px 0; border-top: 1px solid #eef2ec; }
+.security-check svg { color: #559164; flex: 0 0 auto; }
+.security-note { margin-top: 12px; padding: 11px; border-radius: 8px; background: #f7faf5; color: #859185; font-size: 9px; line-height: 1.6; }
+@media (max-width: 950px) {
+  .security-layout { grid-template-columns: 1fr; }
+}
