@@ -220,6 +220,7 @@ h1 { font: 800 clamp(23px, 2vw, 29px)/1.22 Manrope, sans-serif; letter-spacing: 
 .notifications-page-panel > .notification-list { margin-top: 10px; }
 .filter-select { border: 1px solid #e3eae0; background: #fff; color: #536155; border-radius: 7px; padding: 8px 28px 8px 10px; font-size: 10px; }
 .history-metrics { margin-top: 4px; }
+.analytics-metrics { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 .history-panel { padding: 20px 20px 8px; }
 .table-scroll { overflow-x: auto; margin-top: 15px; }
 .data-table { border-collapse: collapse; width: 100%; min-width: 850px; text-align: left; }
