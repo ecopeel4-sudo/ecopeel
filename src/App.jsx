@@ -141,21 +141,17 @@ export default function App() {
 
   useEffect(() => {
     if (!db) return undefined;
-    const stopLive = onValue(ref(db, "ecopeel/live"), (snapshot) => {
+    const stops = [];
+    stops.push(onValue(ref(db, "ecopeel/live"), (snapshot) => {
       setLive(snapshot.exists() ? snapshot.val() : null);
       setFirebaseError("");
-    }, () => setFirebaseError("Could not read live data. Check your Firebase Realtime Database rules."));
-    const stopNotifications = onValue(ref(db, "ecopeel/notifications"), (snapshot) => {
+    }, () => setFirebaseError("Could not read live data. Check your Firebase Realtime Database rules.")));
+    stops.push(onValue(ref(db, "ecopeel/notifications"), (snapshot) => {
       const rows = normalizeList(snapshot.val());
       rows.sort((a, b) => Number(b.createdAt || b.timestamp || 0) - Number(a.createdAt || a.timestamp || 0));
       setNotifications(rows);
-    }, () => setFirebaseError("Could not read notifications. Check your database rules."));
-    const stopHistory = onValue(ref(db, "ecopeel/history"), (snapshot) => {
-      const rows = normalizeList(snapshot.val());
-      rows.sort((a, b) => new Date(b.startedAt || b.timestamp || 0).getTime() - new Date(a.startedAt || a.timestamp || 0).getTime());
-      setHistory(rows);
-    }, () => setFirebaseError("Could not read history. This section requires admin read permissions."));
-    const stopTrend = onValue(ref(db, "ecopeel/telemetry"), (snapshot) => {
+    }, () => setFirebaseError("Could not read notifications. Check your database rules.")));
+    stops.push(onValue(ref(db, "ecopeel/telemetry"), (snapshot) => {
       const rows = normalizeList(snapshot.val());
       rows.sort((a, b) => new Date(a.timestamp || a.time || 0).getTime() - new Date(b.timestamp || b.time || 0).getTime());
       setTrend(rows.map((row) => ({
@@ -164,9 +160,18 @@ export default function App() {
         temperature: Number(row.dehydratorTemperature ?? row.temperature ?? 0),
         humidity: Number(row.humidity ?? 0)
       })).slice(-24));
-    }, () => {});
-    return () => { stopLive(); stopNotifications(); stopHistory(); stopTrend(); };
-  }, []);
+    }, () => {}));
+    if (isAdmin) {
+      stops.push(onValue(ref(db, "ecopeel/history"), (snapshot) => {
+        const rows = normalizeList(snapshot.val());
+        rows.sort((a, b) => new Date(b.startedAt || b.timestamp || 0).getTime() - new Date(a.startedAt || a.timestamp || 0).getTime());
+        setHistory(rows);
+      }, () => setFirebaseError("Could not read history. Check admin database permissions.")));
+    } else {
+      setHistory([]);
+    }
+    return () => stops.forEach((stop) => stop());
+  }, [isAdmin]);
 
   useEffect(() => {
     if (!auth) return undefined;
