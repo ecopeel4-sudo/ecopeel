@@ -721,7 +721,6 @@ export default function App() {
   const navItems = [
     { id: "dashboard", label: "Live dashboard", icon: LayoutDashboard, section: "MONITORING" },
     { id: "machine", label: "Machine status", icon: Factory },
-    { id: "sensors", label: "Material sensors", icon: Gauge },
     { id: "notifications", label: "Notifications", icon: Bell, count: unreadCount },
     ...(isAdmin ? [
       { id: "history", label: "Production history", icon: History, section: "ADMINISTRATION" },
@@ -776,7 +775,7 @@ export default function App() {
         <header className="topbar">
           <div className="topbar-left">
             <button className="icon-button menu-button" aria-label="Open menu" onClick={() => setSidebarOpen(true)}><Menu size={21} /></button>
-            <div className="breadcrumbs"><span>EcoPeel</span><ChevronRight size={14} /><strong>{page === "dashboard" ? "Live dashboard" : page === "machine" ? "Machine status" : page === "sensors" ? "Material sensors" : page === "notifications" ? "Notifications" : page === "history" ? "Production history" : page === "change-password" ? "Change password" : "Admin sign in"}</strong></div>
+            <div className="breadcrumbs"><span>EcoPeel</span><ChevronRight size={14} /><strong>{page === "dashboard" ? "Live dashboard" : page === "machine" ? "Machine status" : page === "notifications" ? "Notifications" : page === "history" ? "Production history" : page === "change-password" ? "Change password" : "Admin sign in"}</strong></div>
           </div>
           <div className="topbar-right">
             <div className="updated-label"><span className={"connection-dot " + (machineOnline ? "" : "offline")} />{demoMode ? "Preview environment" : machineOnline ? "Device connected" : "Waiting for device"}</div>
@@ -815,6 +814,29 @@ export default function App() {
               <MetricCard icon={Thermometer} label="Dehydrator temperature" value={live?.dehydratorTemperature ?? "—"} unit={live?.dehydratorTemperature != null ? "°C" : ""} caption="Drying chamber" tone="orange" />
               <MetricCard icon={Droplet} label="Dehydrator humidity" value={live?.humidity ?? "—"} unit={live?.humidity != null ? "%" : ""} caption="Relative humidity" tone="blue" />
               <MetricCard icon={Factory} label="Molders loaded" value={live ? (live.loadedMolders ?? 0) + " / " + (live.targetMolders ?? 6) : "—"} unit="" caption="Dehydrator capacity" tone="purple" />
+            </div>
+
+            <div className="section-heading material-sensor-section-heading">
+              <div><h2>Material availability</h2><p>Live status of water, vinegar, glycerin, and corn starch supplies</p></div>
+              <span className="section-note"><span className="live-dot" /> Live sensor status</span>
+            </div>
+            <div className="material-sensor-grid dashboard-material-sensors">
+              {materialSensorStates.map((sensor) => {
+                const isEmpty = sensor.status === "empty";
+                const isAvailable = sensor.status === "available";
+                const stateLabel = isEmpty ? "Empty" : isAvailable ? "Available" : "Waiting for data";
+                const stateTone = isEmpty ? "warning" : isAvailable ? "success" : "neutral";
+                const SensorIcon = sensor.Icon;
+                return <article key={sensor.key} className={"material-sensor-card " + (isEmpty ? "is-empty" : isAvailable ? "is-available" : "is-unknown")}>
+                  <div className={"material-sensor-icon " + (isEmpty ? "warning" : isAvailable ? "success" : "")}><SensorIcon size={20} strokeWidth={1.9} /></div>
+                  <div className="material-sensor-main">
+                    <span className="material-sensor-label">{sensor.label}</span>
+                    <div className="material-sensor-state"><StatusPill tone={stateTone}>{stateLabel}</StatusPill></div>
+                    <p>{sensor.sensorType}</p>
+                  </div>
+                  <span className="material-sensor-state-copy">{isEmpty ? "Refill required" : isAvailable ? "Supply detected" : "No status received"}</span>
+                </article>;
+              })}
             </div>
 
             <div className="dashboard-grid">
@@ -896,47 +918,6 @@ export default function App() {
               </div>
             </div>
             <div className="page-footer"><span>Machine actions are not available from this website.</span><span><ShieldCheck size={14} /> Hardware safety stays on the controller</span></div>
-          </div>
-        )}
-
-        {page === "sensors" && (
-          <div className="page-content">
-            <div className="page-heading">
-              <div><div className="eyebrow">INGREDIENT MONITORING</div><h1>Material sensors</h1><p>Check whether each raw material supply is empty or available.</p></div>
-              <span className="date-chip"><Gauge size={15} /> 4 sensors</span>
-            </div>
-            <div className="sensor-status-note">
-              <Activity size={16} />
-              <span>States come from the controller's Firebase live data. “Waiting for data” means the ESP32 has not published a recognized sensor state yet.</span>
-            </div>
-            <div className="material-sensor-grid">
-              {materialSensorStates.map((sensor) => {
-                const isEmpty = sensor.status === "empty";
-                const isAvailable = sensor.status === "available";
-                const stateLabel = isEmpty ? "Empty" : isAvailable ? "Available" : "Waiting for data";
-                const stateTone = isEmpty ? "warning" : isAvailable ? "success" : "neutral";
-                const SensorIcon = sensor.Icon;
-                return <article key={sensor.key} className={"material-sensor-card " + (isEmpty ? "is-empty" : isAvailable ? "is-available" : "is-unknown")}>
-                  <div className={"material-sensor-icon " + (isEmpty ? "warning" : isAvailable ? "success" : "")}><SensorIcon size={21} strokeWidth={1.9} /></div>
-                  <div className="material-sensor-main">
-                    <span className="material-sensor-label">{sensor.label}</span>
-                    <div className="material-sensor-state"><StatusPill tone={stateTone}>{stateLabel}</StatusPill></div>
-                    <p>{sensor.sensorType}</p>
-                  </div>
-                  <span className="material-sensor-state-copy">{isEmpty ? "Refill required" : isAvailable ? "Supply detected" : "No status received"}</span>
-                </article>;
-              })}
-            </div>
-            <section className="panel sensor-instructions-panel">
-              <div className="panel-header"><div><h3>Sensor mapping</h3><p>Expected live-data fields</p></div></div>
-              <div className="sensor-mapping-list">
-                <div><strong>Water, vinegar, glycerin</strong><span>Non-contact liquid sensors</span></div>
-                <div><strong>Corn starch</strong><span>IR presence sensor</span></div>
-                <div><strong>Firebase path</strong><code>ecopeel/live/materialSensors/</code></div>
-              </div>
-              {materialSensorStates.some((sensor) => sensor.status === "empty") && <div className="sensor-empty-banner"><AlertTriangle size={16} /><span>An empty material sensor has been detected. An empty-material notification is created when an administrator session is active; the ESP32 should also write this event so it is recorded even when the website is closed.</span></div>}
-            </section>
-            <div className="page-footer"><span>Sensor readings are status indicators, not a replacement for physical inspection.</span><span><ShieldCheck size={14} /> Read-only monitoring</span></div>
           </div>
         )}
 
