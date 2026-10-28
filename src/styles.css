@@ -208,7 +208,9 @@ h1 { font: 800 clamp(23px, 2vw, 29px)/1.22 Manrope, sans-serif; letter-spacing: 
 .dashboard-material-sensors .material-sensor-icon { width: 36px; height: 36px; flex-basis: 36px; }
 .dashboard-material-sensors .material-sensor-label { font-size: 11px; }
 .dashboard-material-sensors .material-sensor-main p { font-size: 8px; }
-.dashboard-material-sensors .material-sensor-state-copy { max-width: 70px; font-size: 8px; }
+.dashboard-material-sensors .material-sensor-state-copy,
+.machine-material-sensors .material-sensor-state-copy { max-width: 70px; font-size: 8px; }
+.machine-material-sensors { margin-top: 0; }
 .material-sensor-card { display: flex; align-items: center; gap: 13px; min-width: 0; min-height: 114px; padding: 17px; border: 1px solid #e5ebe2; border-radius: 11px; background: #fff; box-shadow: 0 2px 10px #27402003; }
 .material-sensor-card.is-empty { border-color: #efd7d1; background: #fffdfc; }
 .material-sensor-icon { display: grid; place-items: center; width: 42px; height: 42px; flex: 0 0 42px; border-radius: 11px; background: #f0f3ef; color: #89968a; }
