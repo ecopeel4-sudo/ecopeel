@@ -651,8 +651,33 @@ export default function App() {
                   <p>{productionBatchCount === 1 ? "completed batch" : "completed batches"} recorded in Philippine time</p>
                 </div>
               </div>
+              <div className="production-supporting-metrics">
+                <div className="production-supporting-metric">
+                  <div className="production-supporting-icon success"><CheckCircle2 size={18} strokeWidth={1.9} /></div>
+                  <div className="production-supporting-copy">
+                    <span className="production-supporting-label">Success rate</span>
+                    <div className="production-supporting-value">{history.length ? Math.round(history.filter((r) => String(r.status).toLowerCase() === "completed").length / history.length * 100) : "—"}<small>{history.length ? "%" : ""}</small></div>
+                    <span className="production-supporting-caption">Recorded batch outcomes</span>
+                  </div>
+                </div>
+                <div className="production-supporting-metric">
+                  <div className="production-supporting-icon blue"><Factory size={18} strokeWidth={1.9} /></div>
+                  <div className="production-supporting-copy">
+                    <span className="production-supporting-label">Total molders</span>
+                    <div className="production-supporting-value">{history.reduce((sum, r) => sum + Number(r.molders || r.loadedMolders || 0), 0)}</div>
+                    <span className="production-supporting-caption">Across visible history</span>
+                  </div>
+                </div>
+                <div className="production-supporting-metric">
+                  <div className="production-supporting-icon purple"><Clock3 size={18} strokeWidth={1.9} /></div>
+                  <div className="production-supporting-copy">
+                    <span className="production-supporting-label">Average batch duration</span>
+                    <div className="production-supporting-value">{history.length ? Math.round(history.reduce((sum, r) => sum + Number(r.durationMinutes || 0), 0) / history.length) : "—"}<small>{history.length ? " min" : ""}</small></div>
+                    <span className="production-supporting-caption">Based on stored durations</span>
+                  </div>
+                </div>
+              </div>
             </section>
-            <div className="metric-grid analytics-metrics"><MetricCard icon={CheckCircle2} label="Success rate" value={history.length ? Math.round(history.filter((r) => String(r.status).toLowerCase() === "completed").length / history.length * 100) : "—"} unit={history.length ? "%" : ""} caption="Recorded batch outcomes" /><MetricCard icon={Factory} label="Total molders" value={history.reduce((sum, r) => sum + Number(r.molders || r.loadedMolders || 0), 0)} unit="" caption="Across visible history" tone="blue" /><MetricCard icon={Clock3} label="Average batch duration" value={history.length ? Math.round(history.reduce((sum, r) => sum + Number(r.durationMinutes || 0), 0) / history.length) : "—"} unit={history.length ? " min" : ""} caption="Based on stored durations" tone="purple" /></div>
             <section className="panel analytics-chart-panel"><div className="panel-header"><div><h3>Dehydrator readings</h3><p>Temperature and humidity from telemetry</p></div></div>{trend.length ? <div className="chart-wrap large-chart"><ResponsiveContainer width="100%" height="100%"><AreaChart data={trend} margin={{ top: 10, right: 10, left: -18, bottom: 0 }}><CartesianGrid strokeDasharray="3 5" vertical={false} stroke="#e9eee7" /><XAxis dataKey="time" tick={{ fill: "#89938a", fontSize: 11 }} axisLine={false} tickLine={false} /><YAxis tick={{ fill: "#89938a", fontSize: 11 }} axisLine={false} tickLine={false} /><Tooltip contentStyle={{ borderRadius: 10, border: "1px solid #e5ebe2", fontSize: 12 }} /><Area type="monotone" dataKey="temperature" name="Temperature °C" stroke="#43875e" fill="#43875e" fillOpacity={0.10} strokeWidth={2.5} /><Area type="monotone" dataKey="humidity" name="Humidity %" stroke="#5d91c9" fill="#5d91c9" fillOpacity={0.06} strokeWidth={2} /></AreaChart></ResponsiveContainer></div> : <EmptyState title="No telemetry data" text="Connect Firebase and start storing sensor readings to show trends." />}</section>
             <section className="panel analytics-chart-panel"><div className="panel-header"><div><h3>Batch outcomes</h3><p>Completed and interrupted batches in the available records</p></div></div>{history.length ? <div className="chart-wrap large-chart"><ResponsiveContainer width="100%" height="100%"><BarChart data={[{ outcome: "Completed", count: history.filter((r) => String(r.status).toLowerCase() === "completed").length }, { outcome: "Interrupted", count: history.filter((r) => String(r.status).toLowerCase() === "interrupted").length }]} margin={{ top: 14, right: 10, left: -18, bottom: 0 }}><CartesianGrid strokeDasharray="3 5" vertical={false} stroke="#e9eee7" /><XAxis dataKey="outcome" tick={{ fill: "#89938a", fontSize: 12 }} axisLine={false} tickLine={false} /><YAxis allowDecimals={false} tick={{ fill: "#89938a", fontSize: 11 }} axisLine={false} tickLine={false} /><Tooltip contentStyle={{ borderRadius: 10, border: "1px solid #e5ebe2", fontSize: 12 }} /><Bar dataKey="count" name="Batches" fill="#43875e" radius={[6, 6, 0, 0]} barSize={54} /></BarChart></ResponsiveContainer></div> : <EmptyState title="No batch outcome data" text="Stored production history will be summarized here." />}</section>
             {demoMode && <div className="info-banner"><AlertTriangle size={16} /><span>Analytics are based on illustrative demo records until real data is available.</span></div>}
