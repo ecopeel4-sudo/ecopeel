@@ -230,9 +230,9 @@ export default function App() {
 
     return history.filter((row) => {
       if (String(row.status || "").trim().toLowerCase() !== "completed") return false;
-      const batchId = String(row.batchId || "");
-      const recordId = String(row.id || "");
-      if (row.isTest === true || /test/i.test(batchId) || /test/i.test(recordId)) return false;
+      // Exclude only records explicitly marked as test data. A batch ID alone
+      // should not hide a completed record from the period count.
+      if (row.isTest === true) return false;
 
       const completedAt = row.endedAt || row.completedAt || row.finishedAt ||
         row.completedTimestamp || row.timestamp || row.startedAt;
