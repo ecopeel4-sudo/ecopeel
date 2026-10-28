@@ -228,6 +228,16 @@ h1 { font: 800 clamp(23px, 2vw, 29px)/1.22 Manrope, sans-serif; letter-spacing: 
 .data-table td strong { color: #425244; font-size: 10px; }
 .data-table tbody tr:last-child td { border-bottom: 0; }
 .data-table tbody tr:hover { background: #fbfcfa; }
+.production-count-panel { padding: 20px; margin: 0 0 18px; }
+.production-count-header { display: flex; align-items: center; justify-content: space-between; gap: 18px; }
+.production-count-header h3 { margin: 0; color: #3b4b3d; font-size: 13px; font-weight: 800; }
+.production-count-header p { color: #8b968b; font-size: 10px; margin: 5px 0 0; }
+.production-count-body { display: flex; align-items: center; gap: 14px; margin-top: 22px; padding-top: 17px; border-top: 1px solid #eef2ec; }
+.production-count-icon { display: grid; place-items: center; width: 48px; height: 48px; flex: 0 0 48px; border-radius: 12px; background: #edf5eb; color: #39784a; }
+.production-count-copy { min-width: 0; }
+.production-count-number { color: #2d3e30; font: 800 30px/1.15 Manrope, sans-serif; letter-spacing: -.7px; }
+.production-count-copy strong { display: block; color: #4c7653; font-size: 11px; margin-top: 4px; }
+.production-count-copy p { color: #9aa299; font-size: 10px; margin: 5px 0 0; }
 .analytics-chart-panel { padding: 20px; margin-bottom: 18px; }
 .login-page { min-height: calc(100vh - 73px); display: flex; align-items: center; justify-content: center; padding: 38px 22px; }
 .login-card { width: min(100%, 445px); border: 1px solid #e3ebe0; border-radius: 17px; background: #fff; padding: 32px; box-shadow: 0 12px 40px #29452a0a; }
@@ -293,6 +303,9 @@ h1 { font: 800 clamp(23px, 2vw, 29px)/1.22 Manrope, sans-serif; letter-spacing: 
   .demo-badge { font-size: 8px; }
   .dashboard-grid { grid-template-columns: 1fr; }
   .temperature-panel, .process-panel { min-height: 0; }
+  .production-count-panel { padding: 16px; }
+  .production-count-header { align-items: flex-start; }
+  .production-count-header .filter-select { max-width: 132px; }
   .chart-wrap { height: 260px; }
   .heading-actions .date-chip { display: none; }
   .full-process-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
