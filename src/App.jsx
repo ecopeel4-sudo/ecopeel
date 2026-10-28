@@ -35,7 +35,7 @@ const DEMO_LIVE = {
 const DEMO_NOTIFICATIONS = [
   { id: "n1", title: "Dehydration cycle in progress", message: "The current batch is in the drying stage.", type: "info", createdAt: Date.now() - 120000, read: false },
   { id: "n2", title: "Temperature reading updated", message: "Dehydrator temperature is within the demo operating range.", type: "success", createdAt: Date.now() - 900000, read: false },
-  { id: "n3", title: "Molder transfer completed", message: "4 of 6 molders loaded in this demo batch.", type: "success", createdAt: Date.now() - 3600000, read: true },
+  { id: "n3", title: "Molder Transfer Completed", message: "4 of 6 molders loaded in this demo batch.", type: "success", createdAt: Date.now() - 3600000, read: true },
   { id: "n4", title: "Demo mode enabled", message: "These are sample records, not readings from your machine.", type: "warning", createdAt: Date.now() - 7200000, read: true }
 ];
 
@@ -58,8 +58,8 @@ const DEMO_TREND = [
 ];
 
 const PROCESS_STEPS = [
-  "Grinding", "Raw material dispensing", "Mixing & cooking",
-  "Molder dispensing", "Molder transfer", "Dehydrating"
+  "Grinding", "Raw Material Dispensing", "Mixing & Cooking",
+  "Molder Dispensing", "Molder Transfer", "Dehydrating"
 ];
 
 const MATERIAL_SENSORS = [
@@ -953,7 +953,7 @@ export default function App() {
                 </div>
                 <div className="machine-progress-caption">
                   <span>Start</span>
-                  <span>{currentStepIndex === null ? "Current step not identified" : "Current stage: " + PROCESS_STEPS[currentStepIndex]}</span>
+                  <span>{currentStepIndex === null ? "Current Step Not Identified" : "Current Stage: " + PROCESS_STEPS[currentStepIndex]}</span>
                   <span>Complete</span>
                 </div>
               </div>
@@ -962,7 +962,7 @@ export default function App() {
                   const stepIsCurrent = currentStepIndex === i || (currentStepIndex === null && demoMode && i === 5);
                   const stepIsComplete = currentStepIndex !== null && i < currentStepIndex;
                   const stepClass = stepIsCurrent ? "current" : stepIsComplete ? "complete" : "upcoming";
-                  const statusLabel = stepIsCurrent ? "Current stage" : stepIsComplete ? "Completed stage" : currentStepIndex === null ? "Awaiting status mapping" : "Upcoming stage";
+                  const statusLabel = stepIsCurrent ? "Current Stage" : stepIsComplete ? "Completed Stage" : currentStepIndex === null ? "Awaiting Status Mapping" : "Upcoming Stage";
                   return <div key={step} className={"full-process-card " + stepClass}>
                     <span className="full-step-index">{String(i + 1).padStart(2, "0")}</span>
                     <strong>{step}</strong>
