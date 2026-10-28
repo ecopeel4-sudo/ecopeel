@@ -4,8 +4,8 @@ EcoPeel is a responsive monitoring dashboard for the banana-peel bioplastic prod
 
 ## Current features
 
-- Public access: live dashboard, current machine state, sensor readings, workflow progress, and notifications.
-- Admin-only access: production history and analytics.
+- Public access: live dashboard, current machine state, operating readings, material sensor states, workflow progress, and notifications.
+- Admin-only access: production history, notification management (mark read/delete), and password management.
 - Firebase Authentication email/password sign-in, with administrator access checked using the Firebase custom claim \`admin: true\`.
 - Clearly labelled demo data when Firebase client configuration is not present.
 - Responsive layout for desktop, tablet, and mobile.
