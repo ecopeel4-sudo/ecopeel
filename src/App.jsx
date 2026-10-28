@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
 import {
-  Activity, AlertTriangle, Bell, CheckCircle2, ChevronDown, ChevronRight,
-  CircleHelp, Clock3, Droplet, Factory, Gauge, History, LayoutDashboard,
-  Banana, LogIn, LogOut, Menu, Power, ShieldCheck, Thermometer, Wifi,
-  WifiOff, Wind, X
+  Activity, AlertTriangle, Bell, CalendarClock, CheckCircle2, ChevronDown,
+  ChevronLeft, ChevronRight, CircleHelp, ClipboardList, Clock3, Droplet,
+  Factory, Gauge, History, Layers, LayoutDashboard, Banana, LogIn, LogOut,
+  Menu, Power, ShieldCheck, Thermometer, Trash2, Wifi, WifiOff, Wind, X
 } from "lucide-react";
 import {
   Area, AreaChart, Bar, BarChart, CartesianGrid, ResponsiveContainer,
@@ -13,7 +13,7 @@ import {
   EmailAuthProvider, onAuthStateChanged, reauthenticateWithCredential,
   signInWithEmailAndPassword, signOut, updatePassword
 } from "firebase/auth";
-import { get, onValue, ref } from "firebase/database";
+import { get, onValue, ref, remove } from "firebase/database";
 import { auth, db, isFirebaseConfigured } from "./firebase.js";
 
 const DEMO_LIVE = {
@@ -132,8 +132,10 @@ function getDateKey(parts) {
 
 function normalizeList(value) {
   if (!value) return [];
-  if (Array.isArray(value)) return value.map((item, i) => ({ id: item.id || String(i), ...item }));
-  return Object.entries(value).map(([id, item]) => ({ id, ...(item || {}) }));
+  if (Array.isArray(value)) {
+    return value.map((item, i) => ({ id: item?.id || String(i), ...(item || {}), firebaseKey: String(i) }));
+  }
+  return Object.entries(value).map(([id, item]) => ({ id, ...(item || {}), firebaseKey: id }));
 }
 
 function StatusPill({ children, tone = "neutral" }) {
@@ -172,6 +174,9 @@ export default function App() {
   const [loginError, setLoginError] = useState("");
   const [loginBusy, setLoginBusy] = useState(false);
   const [historyFilter, setHistoryFilter] = useState("All");
+  const [historyPage, setHistoryPage] = useState(1);
+  const [deletingHistoryId, setDeletingHistoryId] = useState(null);
+  const [historyActionError, setHistoryActionError] = useState("");
   const [batchCountPeriod, setBatchCountPeriod] = useState("day");
   const [moldersPeriod, setMoldersPeriod] = useState("day");
   const [currentPassword, setCurrentPassword] = useState("");
@@ -218,6 +223,13 @@ export default function App() {
     () => historyFilter === "All" ? history : history.filter((item) => String(item.status || "").toLowerCase() === historyFilter.toLowerCase()),
     [history, historyFilter]
   );
+  const historyPageSize = 5;
+  const historyPageCount = Math.max(1, Math.ceil(visibleHistory.length / historyPageSize));
+  const currentHistoryPage = Math.min(historyPage, historyPageCount);
+  const pagedHistory = useMemo(() => {
+    const start = (currentHistoryPage - 1) * historyPageSize;
+    return visibleHistory.slice(start, start + historyPageSize);
+  }, [visibleHistory, currentHistoryPage]);
 
   const productionBatchCount = useMemo(() => {
     const nowParts = getManilaDateParts(Date.now());
@@ -440,6 +452,28 @@ export default function App() {
       setPasswordError(messages[error.code] || "Could not change the password. Please verify your current password and try again.");
     } finally {
       setPasswordBusy(false);
+    }
+  }
+
+  async function handleDeleteHistory(row) {
+    const recordKey = row.firebaseKey ?? row.id;
+    if (!db || !isAdmin || recordKey === undefined || recordKey === null || recordKey === "") {
+      setHistoryActionError("Could not identify this record or verify administrator access.");
+      return;
+    }
+
+    const label = row.batchId || row.id || "this batch";
+    if (!window.confirm(`Delete batch record "${label}"? This cannot be undone.`)) return;
+
+    setDeletingHistoryId(String(recordKey));
+    setHistoryActionError("");
+    try {
+      await remove(ref(db, "ecopeel/history/" + recordKey));
+      setHistoryPage((pageNumber) => Math.min(pageNumber, Math.max(1, Math.ceil((visibleHistory.length - 1) / historyPageSize))));
+    } catch {
+      setHistoryActionError("Could not delete this batch. Check Firebase administrator write permissions and try again.");
+    } finally {
+      setDeletingHistoryId(null);
     }
   }
 
@@ -709,8 +743,53 @@ export default function App() {
                 </div>
               </div>
             </section>
-            <section className="panel history-panel"><div className="panel-header"><div><h3>Batch records</h3><p>Production activity log</p></div><select className="filter-select" value={historyFilter} onChange={(e) => setHistoryFilter(e.target.value)}><option>All</option><option>Completed</option><option>Interrupted</option></select></div>
-              {visibleHistory.length ? <div className="table-scroll"><table className="data-table"><thead><tr><th>Batch ID</th><th>Started</th><th>Finished</th><th>Duration</th><th>Molders</th><th>Status</th></tr></thead><tbody>{visibleHistory.map((row) => <tr key={row.id || row.batchId}><td><strong>{row.batchId || row.id || "Batch"}</strong></td><td>{formatDate(row.startedAt || row.timestamp)}</td><td>{formatDate(row.endedAt || row.completedAt)}</td><td>{row.durationMinutes != null ? row.durationMinutes + " min" : "—"}</td><td>{row.molders ?? row.loadedMolders ?? "—"}</td><td><StatusPill tone={String(row.status).toLowerCase() === "completed" ? "success" : String(row.status).toLowerCase() === "interrupted" ? "warning" : "neutral"}>{row.status || "Unknown"}</StatusPill></td></tr>)}</tbody></table></div> : <EmptyState title="No production history" text="When the ESP32 writes completed or interrupted batches to Firebase, they will show here." />}
+            <section className="panel history-panel">
+              <div className="panel-header">
+                <div><h3>Batch records</h3><p>Production activity log · {visibleHistory.length} record{visibleHistory.length === 1 ? "" : "s"}</p></div>
+                <select className="filter-select" value={historyFilter} aria-label="Filter batch records by status" onChange={(event) => { setHistoryFilter(event.target.value); setHistoryPage(1); }}>
+                  <option>All</option><option>Completed</option><option>Interrupted</option>
+                </select>
+              </div>
+              {historyActionError && <div className="history-action-error" role="alert"><AlertTriangle size={15} /><span>{historyActionError}</span></div>}
+              {visibleHistory.length ? <>
+                <div className="table-scroll">
+                  <table className="data-table">
+                    <thead>
+                      <tr>
+                        <th><span className="table-heading"><ClipboardList size={13} /> Batch ID</span></th>
+                        <th><span className="table-heading"><CalendarClock size={13} /> Started</span></th>
+                        <th><span className="table-heading"><CalendarClock size={13} /> Finished</span></th>
+                        <th><span className="table-heading"><Clock3 size={13} /> Duration</span></th>
+                        <th><span className="table-heading"><Layers size={13} /> Molders</span></th>
+                        <th><span className="table-heading"><CheckCircle2 size={13} /> Status</span></th>
+                        <th><span className="table-heading"><Trash2 size={13} /> Actions</span></th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {pagedHistory.map((row) => {
+                        const recordKey = String(row.firebaseKey ?? row.id ?? "");
+                        return <tr key={recordKey || row.batchId}>
+                          <td><strong className="batch-id-cell">{row.batchId || row.id || "Batch"}</strong></td>
+                          <td>{formatDate(row.startedAt || row.timestamp)}</td>
+                          <td>{formatDate(row.endedAt || row.completedAt || row.finishedAt)}</td>
+                          <td>{row.durationMinutes != null ? row.durationMinutes + " min" : "—"}</td>
+                          <td>{row.molders ?? row.loadedMolders ?? "—"}</td>
+                          <td><StatusPill tone={String(row.status).toLowerCase() === "completed" ? "success" : String(row.status).toLowerCase() === "interrupted" ? "warning" : "neutral"}>{row.status || "Unknown"}</StatusPill></td>
+                          <td><button className="table-delete-button" type="button" title={`Delete ${row.batchId || "batch record"}`} aria-label={`Delete ${row.batchId || "batch record"}`} disabled={deletingHistoryId === recordKey} onClick={() => handleDeleteHistory(row)}>{deletingHistoryId === recordKey ? <span className="delete-spinner" /> : <Trash2 size={15} />}<span>{deletingHistoryId === recordKey ? "Deleting" : "Delete"}</span></button></td>
+                        </tr>;
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+                <div className="history-pagination">
+                  <span className="pagination-summary">Showing {Math.min((currentHistoryPage - 1) * historyPageSize + 1, visibleHistory.length)}–{Math.min(currentHistoryPage * historyPageSize, visibleHistory.length)} of {visibleHistory.length}</span>
+                  <div className="pagination-controls">
+                    <button type="button" className="pagination-button" disabled={currentHistoryPage <= 1} onClick={() => setHistoryPage((pageNumber) => Math.max(1, Math.min(pageNumber, historyPageCount) - 1))}><ChevronLeft size={15} /> Previous</button>
+                    <span className="pagination-page">Page {currentHistoryPage} of {historyPageCount}</span>
+                    <button type="button" className="pagination-button" disabled={currentHistoryPage >= historyPageCount} onClick={() => setHistoryPage((pageNumber) => Math.min(historyPageCount, Math.max(pageNumber, currentHistoryPage) + 1))}>Next <ChevronRight size={15} /></button>
+                  </div>
+                </div>
+              </> : <EmptyState title="No production history" text="When the ESP32 writes completed or interrupted batches to Firebase, they will show here." />}
             </section>
             {demoMode && <div className="info-banner"><AlertTriangle size={16} /><span>These sample history records are for layout testing only. They are not real production records.</span></div>}
             <div className="page-footer"><span>History access is restricted to authenticated administrators.</span><span><ShieldCheck size={14} /> Admin view</span></div>
