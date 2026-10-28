@@ -237,7 +237,6 @@ h1 { font: 800 clamp(23px, 2vw, 29px)/1.22 Manrope, sans-serif; letter-spacing: 
 .production-supporting-value { color: #2d3e30; font: 800 25px/1.2 Manrope, sans-serif; letter-spacing: -.5px; margin-top: 5px; overflow-wrap: anywhere; }
 .production-supporting-value small { font: 600 11px 'DM Sans', sans-serif; color: #879287; letter-spacing: 0; margin-left: 4px; }
 .production-supporting-caption { display: block; color: #9aa299; font-size: 9px; line-height: 1.45; margin-top: 4px; }
-.analytics-chart-panel { padding: 20px; margin-bottom: 18px; }
 .login-page { min-height: calc(100vh - 73px); display: flex; align-items: center; justify-content: center; padding: 38px 22px; }
 .login-card { width: min(100%, 445px); border: 1px solid #e3ebe0; border-radius: 17px; background: #fff; padding: 32px; box-shadow: 0 12px 40px #29452a0a; }
 .login-brand-mark { height: 51px; width: 51px; display: grid; place-items: center; background: #34774a; color: #fff; border-radius: 14px; margin-bottom: 23px; }
