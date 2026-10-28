@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import {
   Activity, AlertTriangle, Bell, CheckCircle2, ChevronDown, ChevronRight,
   CircleHelp, Clock3, Droplet, Factory, Gauge, History, LayoutDashboard,
-  Banana, LogIn, LogOut, Menu, Power, ShieldCheck, Thermometer, TrendingUp, Wifi,
+  Banana, LogIn, LogOut, Menu, Power, ShieldCheck, Thermometer, Wifi,
   WifiOff, Wind, X
 } from "lucide-react";
 import {
@@ -421,7 +421,7 @@ export default function App() {
   }
 
   function navigate(nextPage) {
-    if ((nextPage === "history" || nextPage === "analytics") && !isAdmin) {
+    if (nextPage === "history" && !isAdmin) {
       setPage("login");
     } else {
       setPage(nextPage);
@@ -435,7 +435,6 @@ export default function App() {
     { id: "notifications", label: "Notifications", icon: Bell, count: unreadCount },
     ...(isAdmin ? [
       { id: "history", label: "Production history", icon: History, section: "ADMINISTRATION" },
-      { id: "analytics", label: "Analytics", icon: TrendingUp },
       { id: "change-password", label: "Change password", icon: ShieldCheck }
     ] : [])
   ];
@@ -487,7 +486,7 @@ export default function App() {
         <header className="topbar">
           <div className="topbar-left">
             <button className="icon-button menu-button" aria-label="Open menu" onClick={() => setSidebarOpen(true)}><Menu size={21} /></button>
-            <div className="breadcrumbs"><span>EcoPeel</span><ChevronRight size={14} /><strong>{page === "dashboard" ? "Live dashboard" : page === "machine" ? "Machine status" : page === "notifications" ? "Notifications" : page === "history" ? "Production history" : page === "analytics" ? "Analytics" : page === "change-password" ? "Change password" : "Admin sign in"}</strong></div>
+            <div className="breadcrumbs"><span>EcoPeel</span><ChevronRight size={14} /><strong>{page === "dashboard" ? "Live dashboard" : page === "machine" ? "Machine status" : page === "notifications" ? "Notifications" : page === "history" ? "Production history" : page === "change-password" ? "Change password" : "Admin sign in"}</strong></div>
           </div>
           <div className="topbar-right">
             <div className="updated-label"><span className={"connection-dot " + (machineOnline ? "" : "offline")} />{demoMode ? "Preview environment" : machineOnline ? "Device connected" : "Waiting for device"}</div>
@@ -621,21 +620,9 @@ export default function App() {
         {page === "history" && isAdmin && (
           <div className="page-content">
             <div className="page-heading"><div><div className="eyebrow">BATCH RECORDS</div><h1>Production history</h1><p>Review past batches and their recorded outcomes.</p></div><div className="heading-actions"><span className="date-chip"><History size={15} /> {history.length} records</span></div></div>
-            <div className="metric-grid history-metrics"><MetricCard icon={CheckCircle2} label="Completed batches" value={history.filter((r) => String(r.status).toLowerCase() === "completed").length} unit="" caption="From available records" /><MetricCard icon={AlertTriangle} label="Interrupted batches" value={history.filter((r) => String(r.status).toLowerCase() === "interrupted").length} unit="" caption="Review for issues" tone="orange" /><MetricCard icon={Factory} label="Molders produced" value={history.reduce((sum, r) => sum + Number(r.molders || r.loadedMolders || 0), 0)} unit="" caption="Across listed batches" tone="blue" /><MetricCard icon={Clock3} label="Average cycle time" value={history.length ? Math.round(history.reduce((sum, r) => sum + Number(r.durationMinutes || 0), 0) / history.length) : "—"} unit={history.length ? " min" : ""} caption="Based on stored durations" tone="purple" /></div>
-            <section className="panel history-panel"><div className="panel-header"><div><h3>Batch records</h3><p>Production activity log</p></div><select className="filter-select" value={historyFilter} onChange={(e) => setHistoryFilter(e.target.value)}><option>All</option><option>Completed</option><option>Interrupted</option></select></div>
-              {visibleHistory.length ? <div className="table-scroll"><table className="data-table"><thead><tr><th>Batch ID</th><th>Started</th><th>Finished</th><th>Duration</th><th>Molders</th><th>Status</th></tr></thead><tbody>{visibleHistory.map((row) => <tr key={row.id || row.batchId}><td><strong>{row.batchId || row.id || "Batch"}</strong></td><td>{formatDate(row.startedAt || row.timestamp)}</td><td>{formatDate(row.endedAt || row.completedAt)}</td><td>{row.durationMinutes != null ? row.durationMinutes + " min" : "—"}</td><td>{row.molders ?? row.loadedMolders ?? "—"}</td><td><StatusPill tone={String(row.status).toLowerCase() === "completed" ? "success" : String(row.status).toLowerCase() === "interrupted" ? "warning" : "neutral"}>{row.status || "Unknown"}</StatusPill></td></tr>)}</tbody></table></div> : <EmptyState title="No production history" text="When the ESP32 writes completed or interrupted batches to Firebase, they will show here." />}
-            </section>
-            {demoMode && <div className="info-banner"><AlertTriangle size={16} /><span>These sample history records are for layout testing only. They are not real production records.</span></div>}
-            <div className="page-footer"><span>History access is restricted to authenticated administrators.</span><span><ShieldCheck size={14} /> Admin view</span></div>
-          </div>
-        )}
-
-        {page === "analytics" && isAdmin && (
-          <div className="page-content">
-            <div className="page-heading"><div><div className="eyebrow">PRODUCTION INSIGHTS</div><h1>Analytics</h1><p>Understand dehydrator conditions and recent batch outcomes.</p></div><span className="date-chip"><TrendingUp size={15} /> Recent activity</span></div>
-            <section className="panel production-count-panel">
+            <section className="panel production-count-panel history-production-summary">
               <div className="production-count-header">
-                <div><h3>Batch production</h3><p>Production summary</p></div>
+                <div><h3>Production summary</h3><p>Batch totals and overall performance</p></div>
               </div>
               <div className="production-summary-grid">
                 <div className="production-supporting-metric is-primary">
@@ -680,12 +667,13 @@ export default function App() {
                 </div>
               </div>
             </section>
-            <section className="panel analytics-chart-panel"><div className="panel-header"><div><h3>Dehydrator readings</h3><p>Temperature and humidity from telemetry</p></div></div>{trend.length ? <div className="chart-wrap large-chart"><ResponsiveContainer width="100%" height="100%"><AreaChart data={trend} margin={{ top: 10, right: 10, left: -18, bottom: 0 }}><CartesianGrid strokeDasharray="3 5" vertical={false} stroke="#e9eee7" /><XAxis dataKey="time" tick={{ fill: "#89938a", fontSize: 11 }} axisLine={false} tickLine={false} /><YAxis tick={{ fill: "#89938a", fontSize: 11 }} axisLine={false} tickLine={false} /><Tooltip contentStyle={{ borderRadius: 10, border: "1px solid #e5ebe2", fontSize: 12 }} /><Area type="monotone" dataKey="temperature" name="Temperature °C" stroke="#43875e" fill="#43875e" fillOpacity={0.10} strokeWidth={2.5} /><Area type="monotone" dataKey="humidity" name="Humidity %" stroke="#5d91c9" fill="#5d91c9" fillOpacity={0.06} strokeWidth={2} /></AreaChart></ResponsiveContainer></div> : <EmptyState title="No telemetry data" text="Connect Firebase and start storing sensor readings to show trends." />}</section>
-            <section className="panel analytics-chart-panel"><div className="panel-header"><div><h3>Batch outcomes</h3><p>Completed and interrupted batches in the available records</p></div></div>{history.length ? <div className="chart-wrap large-chart"><ResponsiveContainer width="100%" height="100%"><BarChart data={[{ outcome: "Completed", count: history.filter((r) => String(r.status).toLowerCase() === "completed").length }, { outcome: "Interrupted", count: history.filter((r) => String(r.status).toLowerCase() === "interrupted").length }]} margin={{ top: 14, right: 10, left: -18, bottom: 0 }}><CartesianGrid strokeDasharray="3 5" vertical={false} stroke="#e9eee7" /><XAxis dataKey="outcome" tick={{ fill: "#89938a", fontSize: 12 }} axisLine={false} tickLine={false} /><YAxis allowDecimals={false} tick={{ fill: "#89938a", fontSize: 11 }} axisLine={false} tickLine={false} /><Tooltip contentStyle={{ borderRadius: 10, border: "1px solid #e5ebe2", fontSize: 12 }} /><Bar dataKey="count" name="Batches" fill="#43875e" radius={[6, 6, 0, 0]} barSize={54} /></BarChart></ResponsiveContainer></div> : <EmptyState title="No batch outcome data" text="Stored production history will be summarized here." />}</section>
-            {demoMode && <div className="info-banner"><AlertTriangle size={16} /><span>Analytics are based on illustrative demo records until real data is available.</span></div>}
+            <section className="panel history-panel"><div className="panel-header"><div><h3>Batch records</h3><p>Production activity log</p></div><select className="filter-select" value={historyFilter} onChange={(e) => setHistoryFilter(e.target.value)}><option>All</option><option>Completed</option><option>Interrupted</option></select></div>
+              {visibleHistory.length ? <div className="table-scroll"><table className="data-table"><thead><tr><th>Batch ID</th><th>Started</th><th>Finished</th><th>Duration</th><th>Molders</th><th>Status</th></tr></thead><tbody>{visibleHistory.map((row) => <tr key={row.id || row.batchId}><td><strong>{row.batchId || row.id || "Batch"}</strong></td><td>{formatDate(row.startedAt || row.timestamp)}</td><td>{formatDate(row.endedAt || row.completedAt)}</td><td>{row.durationMinutes != null ? row.durationMinutes + " min" : "—"}</td><td>{row.molders ?? row.loadedMolders ?? "—"}</td><td><StatusPill tone={String(row.status).toLowerCase() === "completed" ? "success" : String(row.status).toLowerCase() === "interrupted" ? "warning" : "neutral"}>{row.status || "Unknown"}</StatusPill></td></tr>)}</tbody></table></div> : <EmptyState title="No production history" text="When the ESP32 writes completed or interrupted batches to Firebase, they will show here." />}
+            </section>
+            {demoMode && <div className="info-banner"><AlertTriangle size={16} /><span>These sample history records are for layout testing only. They are not real production records.</span></div>}
+            <div className="page-footer"><span>History access is restricted to authenticated administrators.</span><span><ShieldCheck size={14} /> Admin view</span></div>
           </div>
         )}
-
 
         {page === "change-password" && isAdmin && (
           <div className="page-content">
@@ -738,7 +726,7 @@ export default function App() {
               <div className="login-brand-mark"><Banana size={27} strokeWidth={2.2} /></div>
               <div className="eyebrow">RESTRICTED AREA</div>
               <h1>Administrator sign in</h1>
-              <p className="login-description">Sign in with your authorized EcoPeel administrator account to access production history and analytics.</p>
+              <p className="login-description">Sign in with your authorized EcoPeel administrator account to access production history.</p>
               {demoMode && <div className="login-demo-notice"><AlertTriangle size={16} /><span>Firebase is not configured yet. Demo mode is for interface testing; admin sign-in will become available after Firebase setup.</span></div>}
               <form className="login-form" onSubmit={handleLogin}>
                 <label htmlFor="adminEmail">Admin email</label>
