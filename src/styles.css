@@ -355,3 +355,24 @@ h1 { font: 800 clamp(23px, 2vw, 29px)/1.22 Manrope, sans-serif; letter-spacing: 
 @media (max-width: 950px) {
   .security-layout { grid-template-columns: 1fr; }
 }
+
+
+/* Machine power indicator, separate from ESP32/device connectivity */
+.overview-power { display: flex; align-items: center; gap: 9px; padding: 9px 11px; flex: 0 0 auto; background: #f8fbf7; border: 1px solid #e6eee3; border-radius: 9px; }
+.overview-power > svg { color: #458354; flex: 0 0 auto; }
+.overview-power > div { display: flex; flex-direction: column; gap: 4px; min-width: 68px; }
+.overview-power > div > span { color: #89958a; font-size: 9px; white-space: nowrap; }
+.overview-power > div > strong { color: #36804b; font: 800 15px/1 Manrope, sans-serif; letter-spacing: .25px; }
+.overview-power .status-pill { font-size: 8px; padding: 5px 6px; }
+.power-reading { font: 800 21px/1.2 Manrope, sans-serif; letter-spacing: .3px; }
+.power-reading.is-on { color: #36804b; }
+.power-reading.is-off { color: #af7829; }
+.power-reading.is-unknown { color: #89958a; font-size: 15px; }
+.machine-updated { color: #9aa399; font-size: 9px; margin-top: 1px; }
+@media (max-width: 1050px) {
+  .overview-power { flex: 1 1 42%; justify-content: flex-start; }
+}
+@media (max-width: 540px) {
+  .overview-power { flex: 1 1 100%; }
+  .overview-power .status-pill { margin-left: auto; }
+}
