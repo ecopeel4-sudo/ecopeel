@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import {
   Activity, AlertTriangle, Bell, CheckCircle2, ChevronDown, ChevronRight,
   CircleHelp, Clock3, Droplet, Factory, Gauge, History, LayoutDashboard,
-  Leaf, LogIn, LogOut, Menu, ShieldCheck, Thermometer, TrendingUp, Wifi,
+  Banana, LogIn, LogOut, Menu, ShieldCheck, Thermometer, TrendingUp, Wifi,
   WifiOff, Wind, X
 } from "lucide-react";
 import {
@@ -263,7 +263,7 @@ export default function App() {
       {sidebarOpen && <button aria-label="Close navigation" className="mobile-overlay" onClick={() => setSidebarOpen(false)} />}
       <aside className={"sidebar " + (sidebarOpen ? "sidebar-open" : "")}>
         <div className="brand-lockup">
-          <div className="brand-mark"><Leaf size={22} fill="currentColor" /></div>
+          <div className="brand-mark"><Banana size={22} strokeWidth={2.2} /></div>
           <div><div className="brand-name">EcoPeel</div><div className="brand-subtitle">BIOPLASTIC SYSTEMS</div></div>
           <button className="icon-button sidebar-close" onClick={() => setSidebarOpen(false)} aria-label="Close menu"><X size={18} /></button>
         </div>
@@ -425,7 +425,7 @@ export default function App() {
         {page === "login" && (
           <div className="login-page">
             <div className="login-card">
-              <div className="login-brand-mark"><Leaf size={27} fill="currentColor" /></div>
+              <div className="login-brand-mark"><Banana size={27} strokeWidth={2.2} /></div>
               <div className="eyebrow">RESTRICTED AREA</div>
               <h1>Administrator sign in</h1>
               <p className="login-description">Sign in with your authorized EcoPeel administrator account to access production history and analytics.</p>
