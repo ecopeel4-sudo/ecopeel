@@ -1,0 +1,22 @@
+{
+  "rules": {
+    "ecopeel": {
+      "live": {
+        ".read": true,
+        ".write": "auth != null && (auth.token.device === true || auth.token.admin === true)"
+      },
+      "notifications": {
+        ".read": true,
+        ".write": "auth != null && (auth.token.device === true || auth.token.admin === true)"
+      },
+      "telemetry": {
+        ".read": true,
+        ".write": "auth != null && (auth.token.device === true || auth.token.admin === true)"
+      },
+      "history": {
+        ".read": "auth != null && auth.token.admin === true",
+        ".write": "auth != null && (auth.token.device === true || auth.token.admin === true)"
+      }
+    }
+  }
+}
