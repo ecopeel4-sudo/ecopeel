@@ -635,19 +635,21 @@ export default function App() {
             <div className="page-heading"><div><div className="eyebrow">PRODUCTION INSIGHTS</div><h1>Analytics</h1><p>Understand dehydrator conditions and recent batch outcomes.</p></div><span className="date-chip"><TrendingUp size={15} /> Recent activity</span></div>
             <section className="panel production-count-panel">
               <div className="production-count-header">
-                <div><h3>Batch production</h3><p>Completed batches by selected period</p></div>
-                <select className="filter-select" aria-label="Batch count period" value={batchCountPeriod} onChange={(event) => setBatchCountPeriod(event.target.value)}>
-                  <option value="day">Today</option>
-                  <option value="week">This week</option>
-                  <option value="month">This month</option>
-                  <option value="year">This year</option>
-                </select>
+                <div><h3>Batch production</h3><p>Production summary</p></div>
               </div>
               <div className="production-summary-grid">
                 <div className="production-supporting-metric is-primary">
                   <div className="production-supporting-icon"><Factory size={20} strokeWidth={1.9} /></div>
                   <div className="production-supporting-copy">
-                    <span className="production-supporting-label">Completed batches</span>
+                    <div className="production-metric-heading">
+                      <span className="production-supporting-label">Completed batches</span>
+                      <select className="filter-select production-period-select" aria-label="Period for completed batches" value={batchCountPeriod} onChange={(event) => setBatchCountPeriod(event.target.value)}>
+                        <option value="day">Today</option>
+                        <option value="week">This week</option>
+                        <option value="month">This month</option>
+                        <option value="year">This year</option>
+                      </select>
+                    </div>
                     <div className="production-supporting-value">{productionBatchCount}</div>
                     <span className="production-supporting-caption">{batchCountPeriod === "day" ? "Today" : batchCountPeriod === "week" ? "This week" : batchCountPeriod === "month" ? "This month" : "This year"} · Philippine time</span>
                   </div>
