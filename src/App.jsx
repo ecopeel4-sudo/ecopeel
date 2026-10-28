@@ -103,6 +103,33 @@ function relativeTime(value) {
   return Math.floor(hours / 24) + " day ago";
 }
 
+function getManilaDateParts(value) {
+  if (value === undefined || value === null || value === "") return null;
+  let date;
+  if (value instanceof Date) {
+    date = value;
+  } else if (typeof value === "number") {
+    date = new Date(value > 0 && value < 1e12 ? value * 1000 : value);
+  } else {
+    date = new Date(value);
+  }
+  if (Number.isNaN(date.getTime())) return null;
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone: "Asia/Manila",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit"
+  }).formatToParts(date);
+  return Object.fromEntries(
+    parts.filter((part) => ["year", "month", "day"].includes(part.type))
+      .map((part) => [part.type, part.value])
+  );
+}
+
+function getDateKey(parts) {
+  return parts ? parts.year + "-" + parts.month + "-" + parts.day : "";
+}
+
 function normalizeList(value) {
   if (!value) return [];
   if (Array.isArray(value)) return value.map((item, i) => ({ id: item.id || String(i), ...item }));
@@ -145,6 +172,7 @@ export default function App() {
   const [loginError, setLoginError] = useState("");
   const [loginBusy, setLoginBusy] = useState(false);
   const [historyFilter, setHistoryFilter] = useState("All");
+  const [batchCountPeriod, setBatchCountPeriod] = useState("day");
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -189,6 +217,36 @@ export default function App() {
     () => historyFilter === "All" ? history : history.filter((item) => String(item.status || "").toLowerCase() === historyFilter.toLowerCase()),
     [history, historyFilter]
   );
+
+  const productionBatchCount = useMemo(() => {
+    const nowParts = getManilaDateParts(Date.now());
+    if (!nowParts) return 0;
+    const todayKey = getDateKey(nowParts);
+    const monthKey = nowParts.year + "-" + nowParts.month;
+    const todayUtc = new Date(Date.UTC(Number(nowParts.year), Number(nowParts.month) - 1, Number(nowParts.day)));
+    const weekday = todayUtc.getUTCDay();
+    todayUtc.setUTCDate(todayUtc.getUTCDate() - (weekday === 0 ? 6 : weekday - 1));
+    const weekStartKey = todayUtc.toISOString().slice(0, 10);
+
+    return history.filter((row) => {
+      if (String(row.status || "").trim().toLowerCase() !== "completed") return false;
+      const batchId = String(row.batchId || "");
+      const recordId = String(row.id || "");
+      if (row.isTest === true || /test/i.test(batchId) || /test/i.test(recordId)) return false;
+
+      const completedAt = row.endedAt || row.completedAt || row.finishedAt ||
+        row.completedTimestamp || row.timestamp || row.startedAt;
+      const parts = getManilaDateParts(completedAt);
+      if (!parts) return false;
+      const key = getDateKey(parts);
+
+      if (batchCountPeriod === "day") return key === todayKey;
+      if (batchCountPeriod === "week") return key >= weekStartKey && key <= todayKey;
+      if (batchCountPeriod === "month") return parts.year + "-" + parts.month === monthKey && key <= todayKey;
+      if (batchCountPeriod === "year") return parts.year === nowParts.year && key <= todayKey;
+      return false;
+    }).length;
+  }, [history, batchCountPeriod]);
 
   useEffect(() => {
     if (!db) return undefined;
@@ -575,6 +633,25 @@ export default function App() {
         {page === "analytics" && isAdmin && (
           <div className="page-content">
             <div className="page-heading"><div><div className="eyebrow">PRODUCTION INSIGHTS</div><h1>Analytics</h1><p>Understand dehydrator conditions and recent batch outcomes.</p></div><span className="date-chip"><TrendingUp size={15} /> Recent activity</span></div>
+            <section className="panel production-count-panel">
+              <div className="production-count-header">
+                <div><h3>Batch production</h3><p>Completed batches by selected period</p></div>
+                <select className="filter-select" aria-label="Batch count period" value={batchCountPeriod} onChange={(event) => setBatchCountPeriod(event.target.value)}>
+                  <option value="day">Today</option>
+                  <option value="week">This week</option>
+                  <option value="month">This month</option>
+                  <option value="year">This year</option>
+                </select>
+              </div>
+              <div className="production-count-body">
+                <div className="production-count-icon"><Factory size={22} strokeWidth={1.8} /></div>
+                <div className="production-count-copy">
+                  <div className="production-count-number">{productionBatchCount}</div>
+                  <strong>{batchCountPeriod === "day" ? "Today" : batchCountPeriod === "week" ? "This week" : batchCountPeriod === "month" ? "This month" : "This year"}</strong>
+                  <p>{productionBatchCount === 1 ? "completed batch" : "completed batches"} recorded in Philippine time</p>
+                </div>
+              </div>
+            </section>
             <div className="metric-grid"><MetricCard icon={CheckCircle2} label="Success rate" value={history.length ? Math.round(history.filter((r) => String(r.status).toLowerCase() === "completed").length / history.length * 100) : "—"} unit={history.length ? "%" : ""} caption="Recorded batch outcomes" /><MetricCard icon={Factory} label="Total molders" value={history.reduce((sum, r) => sum + Number(r.molders || r.loadedMolders || 0), 0)} unit="" caption="Across visible history" tone="blue" /><MetricCard icon={Thermometer} label="Highest recorded temperature" value={history.length ? Math.max(...history.map((r) => Number(r.maxTemperature || 0))) : "—"} unit={history.length ? "°C" : ""} caption="Stored batch maximum" tone="orange" /><MetricCard icon={Clock3} label="Average batch duration" value={history.length ? Math.round(history.reduce((sum, r) => sum + Number(r.durationMinutes || 0), 0) / history.length) : "—"} unit={history.length ? " min" : ""} caption="Based on stored durations" tone="purple" /></div>
             <section className="panel analytics-chart-panel"><div className="panel-header"><div><h3>Dehydrator readings</h3><p>Temperature and humidity from telemetry</p></div></div>{trend.length ? <div className="chart-wrap large-chart"><ResponsiveContainer width="100%" height="100%"><AreaChart data={trend} margin={{ top: 10, right: 10, left: -18, bottom: 0 }}><CartesianGrid strokeDasharray="3 5" vertical={false} stroke="#e9eee7" /><XAxis dataKey="time" tick={{ fill: "#89938a", fontSize: 11 }} axisLine={false} tickLine={false} /><YAxis tick={{ fill: "#89938a", fontSize: 11 }} axisLine={false} tickLine={false} /><Tooltip contentStyle={{ borderRadius: 10, border: "1px solid #e5ebe2", fontSize: 12 }} /><Area type="monotone" dataKey="temperature" name="Temperature °C" stroke="#43875e" fill="#43875e" fillOpacity={0.10} strokeWidth={2.5} /><Area type="monotone" dataKey="humidity" name="Humidity %" stroke="#5d91c9" fill="#5d91c9" fillOpacity={0.06} strokeWidth={2} /></AreaChart></ResponsiveContainer></div> : <EmptyState title="No telemetry data" text="Connect Firebase and start storing sensor readings to show trends." />}</section>
             <section className="panel analytics-chart-panel"><div className="panel-header"><div><h3>Batch outcomes</h3><p>Completed and interrupted batches in the available records</p></div></div>{history.length ? <div className="chart-wrap large-chart"><ResponsiveContainer width="100%" height="100%"><BarChart data={[{ outcome: "Completed", count: history.filter((r) => String(r.status).toLowerCase() === "completed").length }, { outcome: "Interrupted", count: history.filter((r) => String(r.status).toLowerCase() === "interrupted").length }]} margin={{ top: 14, right: 10, left: -18, bottom: 0 }}><CartesianGrid strokeDasharray="3 5" vertical={false} stroke="#e9eee7" /><XAxis dataKey="outcome" tick={{ fill: "#89938a", fontSize: 12 }} axisLine={false} tickLine={false} /><YAxis allowDecimals={false} tick={{ fill: "#89938a", fontSize: 11 }} axisLine={false} tickLine={false} /><Tooltip contentStyle={{ borderRadius: 10, border: "1px solid #e5ebe2", fontSize: 12 }} /><Bar dataKey="count" name="Batches" fill="#43875e" radius={[6, 6, 0, 0]} barSize={54} /></BarChart></ResponsiveContainer></div> : <EmptyState title="No batch outcome data" text="Stored production history will be summarized here." />}</section>
