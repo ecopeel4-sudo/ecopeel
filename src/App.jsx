@@ -173,6 +173,7 @@ export default function App() {
   const [loginBusy, setLoginBusy] = useState(false);
   const [historyFilter, setHistoryFilter] = useState("All");
   const [batchCountPeriod, setBatchCountPeriod] = useState("day");
+  const [moldersPeriod, setMoldersPeriod] = useState("day");
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -247,6 +248,39 @@ export default function App() {
       return false;
     }).length;
   }, [history, batchCountPeriod]);
+
+  const totalMoldersByPeriod = useMemo(() => {
+    const nowParts = getManilaDateParts(Date.now());
+    if (!nowParts) return 0;
+    const todayKey = getDateKey(nowParts);
+    const monthKey = nowParts.year + "-" + nowParts.month;
+    const todayUtc = new Date(Date.UTC(Number(nowParts.year), Number(nowParts.month) - 1, Number(nowParts.day)));
+    const weekday = todayUtc.getUTCDay();
+    todayUtc.setUTCDate(todayUtc.getUTCDate() - (weekday === 0 ? 6 : weekday - 1));
+    const weekStartKey = todayUtc.toISOString().slice(0, 10);
+
+    return history.reduce((total, row) => {
+      if (row.isTest === true) return total;
+      const batchDate = row.endedAt || row.completedAt || row.finishedAt ||
+        row.completedTimestamp || row.timestamp || row.startedAt;
+      const parts = getManilaDateParts(batchDate);
+      if (!parts) return total;
+      const key = getDateKey(parts);
+      const inPeriod = moldersPeriod === "day"
+        ? key === todayKey
+        : moldersPeriod === "week"
+          ? key >= weekStartKey && key <= todayKey
+          : moldersPeriod === "month"
+            ? parts.year + "-" + parts.month === monthKey && key <= todayKey
+            : moldersPeriod === "year"
+              ? parts.year === nowParts.year && key <= todayKey
+              : false;
+      if (!inPeriod) return total;
+
+      const count = Number(row.molders ?? row.loadedMolders ?? 0);
+      return total + (Number.isFinite(count) ? count : 0);
+    }, 0);
+  }, [history, moldersPeriod]);
 
   useEffect(() => {
     if (!db) return undefined;
@@ -652,9 +686,17 @@ export default function App() {
                 <div className="production-supporting-metric">
                   <div className="production-supporting-icon blue"><Factory size={20} strokeWidth={1.9} /></div>
                   <div className="production-supporting-copy">
-                    <span className="production-supporting-label">Total molders</span>
-                    <div className="production-supporting-value">{history.reduce((sum, r) => sum + Number(r.molders || r.loadedMolders || 0), 0)}</div>
-                    <span className="production-supporting-caption">Across recorded batches</span>
+                    <div className="production-metric-heading">
+                      <span className="production-supporting-label">Total molders</span>
+                      <select className="filter-select production-period-select" aria-label="Period for total molders" value={moldersPeriod} onChange={(event) => setMoldersPeriod(event.target.value)}>
+                        <option value="day">Today</option>
+                        <option value="week">This week</option>
+                        <option value="month">This month</option>
+                        <option value="year">This year</option>
+                      </select>
+                    </div>
+                    <div className="production-supporting-value">{totalMoldersByPeriod}</div>
+                    <span className="production-supporting-caption">{moldersPeriod === "day" ? "Today" : moldersPeriod === "week" ? "This week" : moldersPeriod === "month" ? "This month" : "This year"} · Across recorded batches</span>
                   </div>
                 </div>
                 <div className="production-supporting-metric">
