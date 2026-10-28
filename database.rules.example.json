@@ -3,19 +3,25 @@
     "ecopeel": {
       "live": {
         ".read": true,
-        ".write": "auth != null && (auth.token.device === true || auth.token.admin === true)"
+        ".write": "auth != null && (auth.token.device === true || root.child('ecopeel/admins').child(auth.uid).val() === true)"
       },
       "notifications": {
         ".read": true,
-        ".write": "auth != null && (auth.token.device === true || auth.token.admin === true)"
+        ".write": "auth != null && (auth.token.device === true || root.child('ecopeel/admins').child(auth.uid).val() === true)"
       },
       "telemetry": {
         ".read": true,
-        ".write": "auth != null && (auth.token.device === true || auth.token.admin === true)"
+        ".write": "auth != null && (auth.token.device === true || root.child('ecopeel/admins').child(auth.uid).val() === true)"
       },
       "history": {
-        ".read": "auth != null && auth.token.admin === true",
-        ".write": "auth != null && (auth.token.device === true || auth.token.admin === true)"
+        ".read": "auth != null && root.child('ecopeel/admins').child(auth.uid).val() === true",
+        ".write": "auth != null && (auth.token.device === true || root.child('ecopeel/admins').child(auth.uid).val() === true)"
+      },
+      "admins": {
+        "$uid": {
+          ".read": "auth != null && auth.uid === $uid",
+          ".write": false
+        }
       }
     }
   }
