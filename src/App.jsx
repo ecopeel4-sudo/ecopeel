@@ -72,7 +72,6 @@ const MATERIAL_SENSORS = [
 const NOTIFICATION_FILTERS = [
   { value: "all", label: "All notification types" },
   { value: "malfunction", label: "Malfunction" },
-  { value: "emergency_stop", label: "Emergency stop" },
   { value: "empty_chamber", label: "Empty chamber" },
   { value: "no_molder", label: "No molder" },
   { value: "over_temperature", label: "Over temperature" },
@@ -145,7 +144,7 @@ function getNotificationCategory(item) {
     item.message, item.description, item.details
   ].filter(Boolean).join(" ").toLowerCase().replace(/[_-]+/g, " ");
 
-  if (/emergency stop|e stop|estop|emergency halt/.test(text)) return "emergency_stop";
+  if (/emergency stop|e stop|estop|emergency halt/.test(text)) return "malfunction";
   if (/over temperature|overtemp|over temp|temperature too high|high temperature|temperature limit/.test(text)) return "over_temperature";
   if (/empty chamber|chamber empty|dehydrator chamber empty/.test(text)) return "empty_chamber";
   if (/no molder|no mould|molder missing|mould(er)? missing|zero molders/.test(text)) return "no_molder";
