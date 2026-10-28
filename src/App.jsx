@@ -154,7 +154,7 @@ function getNotificationCategory(item) {
   if (/malfunction|fault|failure|system error|machine error/.test(text)) return "malfunction";
 
   const type = String(item.type || item.level || "").toLowerCase();
-  if (type.includes("warn") || type.includes("error") || type.includes("fault")) return "malfunction";
+  if (type.includes("fault") || type.includes("error")) return "malfunction";
   if (type.includes("complete") || type.includes("success")) return "batch_done";
   return "other";
 }
