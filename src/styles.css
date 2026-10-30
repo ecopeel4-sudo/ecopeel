@@ -1205,3 +1205,9 @@ h1 { font: 800 clamp(23px, 2vw, 29px)/1.22 Manrope, sans-serif; letter-spacing: 
   outline: 2px solid #83a889;
   outline-offset: 1px;
 }
+
+
+/* Single-column layout after removing the dehydrator history graph. */
+.dashboard-grid.process-only-grid {
+  grid-template-columns: minmax(0, 1fr);
+}
