@@ -2349,3 +2349,12 @@ h1 { font: 800 clamp(23px, 2vw, 29px)/1.22 Manrope, sans-serif; letter-spacing: 
     margin: 0;
   }
 }
+
+
+/* Match Notification Center bell icon to the About page's forest-green feature icons */
+.notifications-page .notification-panel-title-icon {
+  color: #ffffff !important;
+  background: linear-gradient(145deg, #34794a 0%, #245d38 55%, #19482d 100%) !important;
+  border: 1px solid #2d6b40 !important;
+  box-shadow: 0 4px 10px #173f2824, inset 0 1px 0 #ffffff30 !important;
+}
