@@ -1062,7 +1062,7 @@ export default function App() {
                   </div>
                 </div>
                 <div className="production-supporting-metric">
-                  <div className="production-supporting-icon purple"><AlertTriangle size={20} strokeWidth={1.9} /></div>
+                  <div className="production-supporting-icon warning"><AlertTriangle size={20} strokeWidth={1.9} /></div>
                   <div className="production-supporting-copy">
                     <span className="production-supporting-label">Interrupted Batches</span>
                     <div className="production-supporting-value">{history.length ? history.filter((row) => String(row.status || "").trim().toLowerCase() === "interrupted").length : "—"}</div>
