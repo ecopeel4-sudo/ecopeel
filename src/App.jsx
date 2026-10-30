@@ -447,12 +447,24 @@ export default function App() {
     stops.push(onValue(ref(db, "ecopeel/telemetry"), (snapshot) => {
       const rows = normalizeList(snapshot.val());
       rows.sort((a, b) => new Date(a.timestamp || a.time || 0).getTime() - new Date(b.timestamp || b.time || 0).getTime());
-      setTrend(rows.map((row) => ({
-        ...row,
-        time: row.time || formatClock(row.timestamp),
-        temperature: Number(row.dehydratorTemperature ?? row.temperature ?? 0),
-        humidity: Number(row.humidity ?? 0)
-      })).slice(-24));
+
+      // Plot only explicitly named dehydrator sensor fields.
+      // Do not fall back to "temperature": the Mega uses that field for the DS18B20 mixture sensor.
+      const validDehydratorRows = rows.flatMap((row) => {
+        if (row.dehydratorTemperature == null || row.dehydratorHumidity == null) return [];
+        const temperature = Number(row.dehydratorTemperature);
+        const humidity = Number(row.dehydratorHumidity);
+        if (!Number.isFinite(temperature) || !Number.isFinite(humidity)) return [];
+        if (temperature < -40 || temperature > 80 || humidity < 0 || humidity > 100) return [];
+        return [{
+          ...row,
+          time: row.time || formatClock(row.timestamp),
+          temperature,
+          humidity
+        }];
+      });
+
+      setTrend(validDehydratorRows.slice(-24));
     }, () => {}));
     if (isAdmin) {
       stops.push(onValue(ref(db, "ecopeel/history"), (snapshot) => {
@@ -882,7 +894,7 @@ export default function App() {
 
             <div className="dashboard-grid">
               <section className="panel temperature-panel">
-                <div className="panel-header"><div><h3>Dehydrator Environment</h3><p>Temperature and humidity trend</p></div><span className="chart-period">Recent Readings <ChevronDown size={14} /></span></div>
+                <div className="panel-header"><div><h3>Dehydrator Environment</h3><p>Dehydrator DHT22 temperature and humidity · Recent sensor history</p></div><span className="chart-period">Recent Readings <ChevronDown size={14} /></span></div>
                 {trend.length ? <div className="chart-wrap"><ResponsiveContainer width="100%" height="100%"><AreaChart data={trend} margin={{ top: 10, right: 8, left: -18, bottom: 0 }}><defs><linearGradient id="temperatureFill" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#43875e" stopOpacity={0.18} /><stop offset="100%" stopColor="#43875e" stopOpacity={0.01} /></linearGradient></defs><CartesianGrid strokeDasharray="3 5" vertical={false} stroke="#e9eee7" /><XAxis dataKey="time" tick={{ fill: "#89938a", fontSize: 11 }} axisLine={false} tickLine={false} /><YAxis tick={{ fill: "#89938a", fontSize: 11 }} axisLine={false} tickLine={false} /><Tooltip contentStyle={{ borderRadius: 10, border: "1px solid #e5ebe2", fontSize: 12 }} /><Area type="monotone" dataKey="temperature" name="Temperature °C" stroke="#43875e" strokeWidth={2.5} fill="url(#temperatureFill)" /><Area type="monotone" dataKey="humidity" name="Humidity %" stroke="#5d91c9" strokeWidth={2} fill="transparent" /></AreaChart></ResponsiveContainer></div> : <EmptyState title="No sensor history yet" text="Telemetry readings will appear here when the ESP32 starts sending data to Firebase." />}
                 <div className="chart-legend"><span><i className="legend-line green-line" /> Temperature (°C)</span><span><i className="legend-line blue-line" /> Humidity (%)</span></div>
               </section>
