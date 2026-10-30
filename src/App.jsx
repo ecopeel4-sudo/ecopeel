@@ -59,7 +59,7 @@ const DEMO_TREND = [
 
 const PROCESS_STEPS = [
   "Grinding", "Raw Material Dispensing", "Mixing & Cooking",
-  "Molder Dispensing", "Molder Transfer", "Dehydrating"
+  "Waiting for Molder", "Molder Dispensing", "Molder Transfer", "Dehydrating"
 ];
 
 const MATERIAL_SENSORS = [
@@ -164,16 +164,24 @@ function notificationCategoryLabel(category) {
 
 function getCurrentStepIndex(live) {
   if (!live) return null;
+
   const text = [
     live.currentStep, live.process, live.status, live.currentState, live.machineState
+  ].filter((value) => typeof value === "string").join(" ").trim().toLowerCase();
+  const reportedState = [
+    live.status, live.currentState, live.machineState
   ].filter((value) => typeof value === "string").join(" ").trim().toLowerCase();
 
   if (!text) return null;
   if (/raw material|water dispensing|glycerin|corn starch|vinegar dispensing|dispensing raw/.test(text)) return 1;
-  if (/molder dispensing|dispensing molder/.test(text)) return 3;
-  if (/molder transfer|transfer molder|transferring molder|linear actuator|lift motor|layer position|transfer(?!ring?)/.test(text)) return 4;
-  if (/mixing|mix(?:ing)?\b|cooking|cook(?:ing)?\b/.test(text)) return 2;
-  if (/dehydrat|dehydration|drying|dry cycle/.test(text)) return 5;
+
+  // Prioritize the actual waiting state over older firmware that labels its
+  // currentStep as "Molder Dispensing" while waiting for the next empty molder.
+  if (/waiting for molder|awaiting molder/.test(reportedState) || /waiting for molder|awaiting molder/.test(text)) return 3;
+  if (/molder dispensing|dispensing molder/.test(text)) return 4;
+  if (/molder transfer|transfer molder|transferring molder|linear actuator|lift motor|layer position|transfer(?!ring?)/.test(text)) return 5;
+  if (/mixing|mix(?:ing)?\\b|cooking|cook(?:ing)?\\b/.test(text)) return 2;
+  if (/dehydrat|dehydration|drying|dry cycle/.test(text)) return 6;
   if (/grind|pulver/.test(text)) return 0;
   return null;
 }
@@ -335,7 +343,7 @@ export default function App() {
   const currentProgress = hasReportedProgress
     ? Math.min(100, Math.max(0, Number(live.progress)))
     : currentStepIndex !== null
-      ? Math.round((currentStepIndex / PROCESS_STEPS.length) * 100)
+      ? Math.round((currentStepIndex / Math.max(1, PROCESS_STEPS.length - 1)) * 100)
       : 0;
   const hasProgressData = hasReportedProgress || currentStepIndex !== null;
   const visibleHistory = useMemo(() => {
