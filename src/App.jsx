@@ -281,6 +281,7 @@ export default function App() {
   const [deletingHistoryId, setDeletingHistoryId] = useState(null);
   const [historyActionError, setHistoryActionError] = useState("");
   const [notificationFilter, setNotificationFilter] = useState("all");
+  const [notificationStatusFilter, setNotificationStatusFilter] = useState("all");
   const [notificationActionError, setNotificationActionError] = useState("");
   const [notificationBusyKey, setNotificationBusyKey] = useState(null);
   const [markingAllRead, setMarkingAllRead] = useState(false);
@@ -301,12 +302,18 @@ export default function App() {
     [live]
   );
   const materialSensorSignature = materialSensorStates.map((sensor) => sensor.key + ":" + sensor.status).join("|");
+  const notificationRecords = notifications.filter((item) => !item.systemRecord && !item._systemRecord);
+  const notificationTotal = notificationRecords.length;
+  const resolvedNotificationCount = notificationRecords.filter((item) => item.active === false).length;
   const visibleNotifications = useMemo(
     () => notifications.filter((item) => !item.systemRecord && !item._systemRecord &&
-      (notificationFilter === "all" || getNotificationCategory(item) === notificationFilter)),
-    [notifications, notificationFilter]
+      (notificationFilter === "all" || getNotificationCategory(item) === notificationFilter) &&
+      (notificationStatusFilter === "all" ||
+        (notificationStatusFilter === "unread" && !item.read) ||
+        (notificationStatusFilter === "resolved" && item.active === false))),
+    [notifications, notificationFilter, notificationStatusFilter]
   );
-  const unreadCount = notifications.filter((n) => !n.read && !n.systemRecord && !n._systemRecord).length;
+  const unreadCount = notificationRecords.filter((item) => !item.read).length;
   const currentStatus = live?.status || live?.currentState || "Waiting for device";
   const machineOnline = demoMode ? true : Boolean(live && (live.online === true || live.isOnline === true));
   const explicitPowerState = [
@@ -1025,7 +1032,7 @@ export default function App() {
             <div className="notifications-overview-grid">
               <article className="notification-overview-card">
                 <span className="notification-overview-icon total"><Bell size={17} /></span>
-                <div><span className="notification-overview-label">Total Notifications</span><strong>{notifications.length}</strong><small>Recorded machine events</small></div>
+                <div><span className="notification-overview-label">Total Notifications</span><strong>{notificationTotal}</strong><small>Recorded machine events</small></div>
               </article>
               <article className="notification-overview-card unread">
                 <span className="notification-overview-icon unread"><Clock3 size={17} /></span>
@@ -1033,7 +1040,7 @@ export default function App() {
               </article>
               <article className="notification-overview-card resolved">
                 <span className="notification-overview-icon resolved"><CheckCircle2 size={17} /></span>
-                <div><span className="notification-overview-label">Resolved</span><strong>{notifications.filter((item) => item.active === false).length}</strong><small>Issues cleared or restored</small></div>
+                <div><span className="notification-overview-label">Resolved</span><strong>{resolvedNotificationCount}</strong><small>Issues cleared or restored</small></div>
               </article>
             </div>
 
@@ -1041,7 +1048,7 @@ export default function App() {
               <div className="panel-header notification-panel-header">
                 <div className="notification-panel-title">
                   <div className="notification-panel-title-icon"><Bell size={17} /></div>
-                  <div><h3>Notification Center</h3><p>{visibleNotifications.length} matching record{visibleNotifications.length === 1 ? "" : "s"} · {unreadCount} unread across all notifications</p></div>
+                  <div><h3>Notification Center</h3><p>Machine alerts and production updates from your EcoPeel system.</p></div>
                 </div>
                 <div className="notification-header-tools">
                   {isAdmin && unreadCount > 0 && <button type="button" className="notification-action-button mark-read notification-mark-all-button" disabled={markingAllRead} onClick={handleMarkAllNotificationsRead} title="Mark all notifications as read">
@@ -1051,8 +1058,22 @@ export default function App() {
                   <label className="notification-type-filter"><span>Filter By Type</span><select className="filter-select" aria-label="Filter notifications by type" value={notificationFilter} onChange={(event) => setNotificationFilter(event.target.value)}>{NOTIFICATION_FILTERS.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}</select></label>
                 </div>
               </div>
+              <div className="notification-view-toolbar">
+                <div className="notification-view-tabs" role="group" aria-label="Filter notifications by status">
+                  <button type="button" className={"notification-view-tab " + (notificationStatusFilter === "all" ? "active" : "")} aria-pressed={notificationStatusFilter === "all"} onClick={() => setNotificationStatusFilter("all")}>
+                    <span>All</span><span className="notification-tab-count">{notificationTotal}</span>
+                  </button>
+                  <button type="button" className={"notification-view-tab " + (notificationStatusFilter === "unread" ? "active" : "")} aria-pressed={notificationStatusFilter === "unread"} onClick={() => setNotificationStatusFilter("unread")}>
+                    <span>Unread</span><span className="notification-tab-count">{unreadCount}</span>
+                  </button>
+                  <button type="button" className={"notification-view-tab " + (notificationStatusFilter === "resolved" ? "active" : "")} aria-pressed={notificationStatusFilter === "resolved"} onClick={() => setNotificationStatusFilter("resolved")}>
+                    <span>Resolved</span><span className="notification-tab-count">{resolvedNotificationCount}</span>
+                  </button>
+                </div>
+                <span className="notification-view-summary">Showing <strong>{visibleNotifications.length}</strong> of {notificationTotal} notifications</span>
+              </div>
               {notificationActionError && <div className="history-action-error" role="alert"><AlertTriangle size={15} /><span>{notificationActionError}</span></div>}
-              {visibleNotifications.length ? <div className="notification-list">{visibleNotifications.map((item) => <NotificationRow key={item.firebaseKey || item.id} item={item} expanded isAdmin={isAdmin} busy={notificationBusyKey === String(item.firebaseKey ?? item.id)} onMarkRead={() => handleNotificationAction(item, "read")} onDelete={() => handleNotificationAction(item, "delete")} />)}</div> : <EmptyState title="No matching notifications" text={notificationFilter === "all" ? "When the controller or ESP32 records a notification in Firebase, it will be listed here." : "No notifications match this type yet."} />}
+              {visibleNotifications.length ? <div className="notification-list">{visibleNotifications.map((item) => <NotificationRow key={item.firebaseKey || item.id} item={item} expanded isAdmin={isAdmin} busy={notificationBusyKey === String(item.firebaseKey ?? item.id)} onMarkRead={() => handleNotificationAction(item, "read")} onDelete={() => handleNotificationAction(item, "delete")} />)}</div> : <EmptyState title="No matching notifications" text={notificationStatusFilter === "unread" ? "You're all caught up. There are no unread notifications." : notificationStatusFilter === "resolved" ? "Resolved notifications will appear here when an alert has been cleared." : notificationFilter === "all" ? "When the controller or ESP32 records a notification in Firebase, it will be listed here." : "No notifications match this type yet."} />}
             </section>
             <div className="page-footer"><span>{isAdmin ? "Administrators can mark alerts as read or delete records." : "Notification actions are available to authenticated administrators."}</span><span><Bell size={14} /> {demoMode ? "Example messages" : "Firebase notification stream"}</span></div>
           </div>
