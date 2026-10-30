@@ -4,7 +4,7 @@ import {
   ChevronDown, ChevronLeft, ChevronRight, CircleHelp, ClipboardList, Clock3,
   Droplet, Factory, Gauge, History, Layers, LayoutDashboard, Banana, Info, LogIn,
   LogOut, Menu, Power, Search, ShieldCheck, Thermometer, Trash2, Wifi, WifiOff,
-  Wind, X, Database, GitBranch, Cpu, Server, ArrowLeftRight
+  Wind, X, Database, GitBranch, Cpu, Server, ArrowLeftRight, Eye, EyeOff
 } from "lucide-react";
 import {
   Area, AreaChart, Bar, BarChart, CartesianGrid, ResponsiveContainer,
@@ -273,6 +273,7 @@ export default function App() {
   const [authChecking, setAuthChecking] = useState(Boolean(auth));
   const [loginIdentifier, setLoginIdentifier] = useState("");
   const [password, setPassword] = useState("");
+  const [showLoginPassword, setShowLoginPassword] = useState(false);
   const [loginError, setLoginError] = useState("");
   const [loginBusy, setLoginBusy] = useState(false);
   const [historyFilter, setHistoryFilter] = useState("All");
@@ -1327,7 +1328,19 @@ export default function App() {
                 <label htmlFor="adminEmail">Admin email</label>
                 <input id="adminEmail" type="email" autoComplete="username" placeholder="admin@example.com" value={loginIdentifier} onChange={(e) => setLoginIdentifier(e.target.value)} required />
                 <label htmlFor="adminPassword">Password</label>
-                <input id="adminPassword" type="password" autoComplete="current-password" placeholder="Enter your password" value={password} onChange={(e) => setPassword(e.target.value)} required />
+                <div className="password-input-wrapper">
+                  <input id="adminPassword" type={showLoginPassword ? "text" : "password"} autoComplete="current-password" placeholder="Enter your password" value={password} onChange={(e) => setPassword(e.target.value)} required />
+                  <button
+                    className="password-visibility-toggle"
+                    type="button"
+                    onClick={() => setShowLoginPassword((visible) => !visible)}
+                    aria-label={showLoginPassword ? "Hide password" : "Show password"}
+                    aria-pressed={showLoginPassword}
+                    title={showLoginPassword ? "Hide password" : "Show password"}
+                  >
+                    {showLoginPassword ? <EyeOff size={17} /> : <Eye size={17} />}
+                  </button>
+                </div>
                 {loginError && <div className="login-error"><AlertTriangle size={16} />{loginError}</div>}
                 <button className="sign-in-button" disabled={loginBusy || authChecking || demoMode} type="submit">{loginBusy ? "Signing in…" : <><LogIn size={17} /> Sign in securely</>}</button>
               </form>
