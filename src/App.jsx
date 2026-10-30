@@ -281,7 +281,6 @@ export default function App() {
   const [deletingHistoryId, setDeletingHistoryId] = useState(null);
   const [historyActionError, setHistoryActionError] = useState("");
   const [notificationFilter, setNotificationFilter] = useState("all");
-  const [notificationStatusFilter, setNotificationStatusFilter] = useState("all");
   const [notificationActionError, setNotificationActionError] = useState("");
   const [notificationBusyKey, setNotificationBusyKey] = useState(null);
   const [markingAllRead, setMarkingAllRead] = useState(false);
@@ -307,11 +306,8 @@ export default function App() {
   const resolvedNotificationCount = notificationRecords.filter((item) => item.active === false).length;
   const visibleNotifications = useMemo(
     () => notifications.filter((item) => !item.systemRecord && !item._systemRecord &&
-      (notificationFilter === "all" || getNotificationCategory(item) === notificationFilter) &&
-      (notificationStatusFilter === "all" ||
-        (notificationStatusFilter === "unread" && !item.read) ||
-        (notificationStatusFilter === "resolved" && item.active === false))),
-    [notifications, notificationFilter, notificationStatusFilter]
+      (notificationFilter === "all" || getNotificationCategory(item) === notificationFilter)),
+    [notifications, notificationFilter]
   );
   const unreadCount = notificationRecords.filter((item) => !item.read).length;
   const currentStatus = live?.status || live?.currentState || "Waiting for device";
@@ -1058,22 +1054,8 @@ export default function App() {
                   <label className="notification-type-filter"><span>Filter By Type</span><select className="filter-select" aria-label="Filter notifications by type" value={notificationFilter} onChange={(event) => setNotificationFilter(event.target.value)}>{NOTIFICATION_FILTERS.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}</select></label>
                 </div>
               </div>
-              <div className="notification-view-toolbar">
-                <div className="notification-view-tabs" role="group" aria-label="Filter notifications by status">
-                  <button type="button" className={"notification-view-tab " + (notificationStatusFilter === "all" ? "active" : "")} aria-pressed={notificationStatusFilter === "all"} onClick={() => setNotificationStatusFilter("all")}>
-                    <span>All</span><span className="notification-tab-count">{notificationTotal}</span>
-                  </button>
-                  <button type="button" className={"notification-view-tab " + (notificationStatusFilter === "unread" ? "active" : "")} aria-pressed={notificationStatusFilter === "unread"} onClick={() => setNotificationStatusFilter("unread")}>
-                    <span>Unread</span><span className="notification-tab-count">{unreadCount}</span>
-                  </button>
-                  <button type="button" className={"notification-view-tab " + (notificationStatusFilter === "resolved" ? "active" : "")} aria-pressed={notificationStatusFilter === "resolved"} onClick={() => setNotificationStatusFilter("resolved")}>
-                    <span>Resolved</span><span className="notification-tab-count">{resolvedNotificationCount}</span>
-                  </button>
-                </div>
-                <span className="notification-view-summary">Showing <strong>{visibleNotifications.length}</strong> of {notificationTotal} notifications</span>
-              </div>
               {notificationActionError && <div className="history-action-error" role="alert"><AlertTriangle size={15} /><span>{notificationActionError}</span></div>}
-              {visibleNotifications.length ? <div className="notification-list">{visibleNotifications.map((item) => <NotificationRow key={item.firebaseKey || item.id} item={item} expanded isAdmin={isAdmin} busy={notificationBusyKey === String(item.firebaseKey ?? item.id)} onMarkRead={() => handleNotificationAction(item, "read")} onDelete={() => handleNotificationAction(item, "delete")} />)}</div> : <EmptyState title="No matching notifications" text={notificationStatusFilter === "unread" ? "You're all caught up. There are no unread notifications." : notificationStatusFilter === "resolved" ? "Resolved notifications will appear here when an alert has been cleared." : notificationFilter === "all" ? "When the controller or ESP32 records a notification in Firebase, it will be listed here." : "No notifications match this type yet."} />}
+              {visibleNotifications.length ? <div className="notification-list">{visibleNotifications.map((item) => <NotificationRow key={item.firebaseKey || item.id} item={item} expanded isAdmin={isAdmin} busy={notificationBusyKey === String(item.firebaseKey ?? item.id)} onMarkRead={() => handleNotificationAction(item, "read")} onDelete={() => handleNotificationAction(item, "delete")} />)}</div> : <EmptyState title="No matching notifications" text={notificationFilter === "all" ? "When the controller or ESP32 records a notification in Firebase, it will be listed here." : "No notifications match this type yet."} />}
             </section>
             <div className="page-footer"><span>{isAdmin ? "Administrators can mark alerts as read or delete records." : "Notification actions are available to authenticated administrators."}</span><span><Bell size={14} /> {demoMode ? "Example messages" : "Firebase notification stream"}</span></div>
           </div>
