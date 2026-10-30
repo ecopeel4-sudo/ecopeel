@@ -828,7 +828,7 @@ export default function App() {
         {firebaseError && <div className="error-banner"><AlertTriangle size={16} /><span>{firebaseError}</span></div>}
 
         {page === "dashboard" && (
-          <div className="page-content">
+          <div className="page-content dashboard-page">
             <div className="page-heading">
               <div><div className="eyebrow">MONITORING OVERVIEW</div><h1>Good day, welcome to EcoPeel</h1><p>Monitor your banana-peel bioplastic production process in real time.</p></div>
               <div className="heading-actions"><span className="date-chip"><Clock3 size={15} /> {new Date().toLocaleDateString([], { weekday: "short", month: "short", day: "numeric", year: "numeric" })}</span><button className="refresh-button" onClick={() => window.location.reload()}><Activity size={16} /> Refresh view</button></div>
@@ -841,7 +841,7 @@ export default function App() {
               <div className="overview-stat"><span>Current process</span><strong>{live?.currentStep || live?.process || (live ? currentStatus : "No data yet")}</strong></div>
               <div className="overview-stat"><span>Last update</span><strong>{live ? relativeTime(live.updatedAt || live.timestamp) : "No update yet"}</strong></div>
               <div className="overview-power">
-                <Power size={17} />
+                <span className="overview-power-icon"><Power size={17} /></span>
                 <div><span>Machine power</span><strong>{machinePowerOn === null ? "Unknown" : machinePowerOn ? "ON" : "OFF"}</strong></div>
                 <StatusPill tone={machinePowerOn === null ? "neutral" : machinePowerOn ? "success" : "warning"}>{machinePowerOn === null ? "No state" : machinePowerOn ? "Running" : "Stopped"}</StatusPill>
               </div>
@@ -908,7 +908,7 @@ export default function App() {
                 {notifications.length ? <div className="notification-list compact-list">{notifications.slice(0, 3).map((item) => <NotificationRow key={item.id} item={item} />)}</div> : <EmptyState title="No notifications" text="New alerts will appear here when recorded in Firebase." />}
               </section>
               <section className="panel capacity-panel">
-                <div className="panel-header"><div><h3>Dehydrator Capacity</h3><p>Molder loading progress</p></div><Factory size={18} className="muted-icon" /></div>
+                <div className="panel-header"><div><h3>Dehydrator Capacity</h3><p>Molder loading progress</p></div><span className="capacity-heading-icon"><Factory size={17} /></span></div>
                 <div className="capacity-number"><strong>{live?.loadedMolders ?? (demoMode ? 4 : 0)}</strong><span>/ {live?.targetMolders ?? 6} molders loaded</span></div>
                 <div className="capacity-slots">{Array.from({ length: Number(live?.targetMolders ?? 6) || 6 }, (_, i) => <span key={i} className={i < Number(live?.loadedMolders ?? (demoMode ? 4 : 0)) ? "slot filled" : "slot"} />)}</div>
                 <div className="capacity-footer"><span><i className="slot-key filled-key" /> Loaded</span><span><i className="slot-key empty-key" /> Available</span></div>
