@@ -868,7 +868,7 @@ export default function App() {
                 const stateTone = isEmpty ? "warning" : isAvailable ? "success" : "neutral";
                 const SensorIcon = sensor.Icon;
                 return <article key={sensor.key} className={"material-sensor-card " + (isEmpty ? "is-empty" : isAvailable ? "is-available" : "is-unknown")}>
-                  <div className={"material-sensor-icon " + (isEmpty ? "warning" : isAvailable ? "success" : "")}><SensorIcon size={20} strokeWidth={1.9} /></div>
+                  <div className={"material-sensor-icon material-" + sensor.key + " " + (isEmpty ? "warning" : isAvailable ? "success" : "")}><SensorIcon size={20} strokeWidth={1.9} /></div>
                   <div className="material-sensor-main">
                     <span className="material-sensor-label">{sensor.label}</span>
                     <div className="material-sensor-state"><StatusPill tone={stateTone}>{stateLabel}</StatusPill></div>
@@ -936,7 +936,7 @@ export default function App() {
                 const stateTone = isEmpty ? "warning" : isAvailable ? "success" : "neutral";
                 const SensorIcon = sensor.Icon;
                 return <article key={sensor.key} className={"material-sensor-card " + (isEmpty ? "is-empty" : isAvailable ? "is-available" : "is-unknown")}>
-                  <div className={"material-sensor-icon " + (isEmpty ? "warning" : isAvailable ? "success" : "")}><SensorIcon size={20} strokeWidth={1.9} /></div>
+                  <div className={"material-sensor-icon material-" + sensor.key + " " + (isEmpty ? "warning" : isAvailable ? "success" : "")}><SensorIcon size={20} strokeWidth={1.9} /></div>
                   <div className="material-sensor-main">
                     <span className="material-sensor-label">{sensor.label}</span>
                     <div className="material-sensor-state"><StatusPill tone={stateTone}>{stateLabel}</StatusPill></div>
