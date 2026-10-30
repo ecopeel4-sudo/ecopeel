@@ -1443,3 +1443,74 @@ h1 { font: 800 clamp(23px, 2vw, 29px)/1.22 Manrope, sans-serif; letter-spacing: 
     margin: 0;
   }
 }
+
+
+/* Notification Center header — same continuous forest-green treatment as Batch History */
+.notifications-page-panel {
+  padding: 0 21px 15px;
+  overflow: hidden;
+}
+.notifications-page-panel .notification-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin: 0 -21px 13px;
+  padding: 15px 21px;
+  border: 0;
+  border-bottom: 1px solid #173f2b;
+  border-radius: 10px 10px 0 0;
+  background: linear-gradient(110deg, #326b45 0%, #245638 48%, #173f2b 100%);
+}
+.notifications-page .notification-panel-title-icon {
+  color: #ffffff;
+  background: #ffffff20;
+  border: 1px solid #ffffff35;
+  box-shadow: inset 0 1px 0 #ffffff25;
+}
+.notifications-page .notification-panel-title h3 {
+  color: #ffffff;
+}
+.notifications-page .notification-panel-title p {
+  color: #dcebe0;
+}
+.notifications-page .notification-header-tools {
+  gap: 9px;
+}
+.notifications-page .notification-type-filter {
+  color: #e4efe6;
+}
+.notifications-page .notification-type-filter select {
+  color: #35553b;
+  background: #ffffff;
+  border-color: #ffffff;
+}
+.notifications-page .notification-mark-all-button {
+  color: #285638;
+  background: #ffffff;
+  border-color: #ffffff;
+}
+.notifications-page .notification-mark-all-button:hover:not(:disabled) {
+  color: #173f2b;
+  background: #edf5ed;
+  border-color: #edf5ed;
+}
+.notifications-page .notification-mark-all-button svg {
+  color: #39784a;
+}
+@media (max-width: 650px) {
+  .notifications-page-panel {
+    padding: 0 12px 12px;
+  }
+  .notifications-page-panel .notification-panel-header {
+    margin: 0 -12px 12px;
+    padding: 14px 13px;
+    border-radius: 10px 10px 0 0;
+  }
+  .notifications-page .notification-header-tools {
+    gap: 8px;
+  }
+  .notifications-page .notification-mark-all-button {
+    align-self: flex-start;
+  }
+}
