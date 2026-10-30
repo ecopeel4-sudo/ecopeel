@@ -979,6 +979,27 @@ export default function App() {
                 })}
               </div>
             </div>
+
+            <section className="panel capacity-panel machine-capacity-panel">
+              <div className="panel-header">
+                <div><h3>Dehydrator Capacity</h3><p>Molder loading progress</p></div>
+                <Factory size={19} className="muted-icon" />
+              </div>
+              <div className="capacity-number">
+                <strong>{live?.loadedMolders ?? (demoMode ? 4 : 0)}</strong>
+                <span>/ {live?.targetMolders ?? 6} molders loaded</span>
+              </div>
+              <div className="capacity-slots">
+                {Array.from({ length: Number(live?.targetMolders ?? 6) || 6 }, (_, i) => (
+                  <span key={i} className={i < Number(live?.loadedMolders ?? (demoMode ? 4 : 0)) ? "slot filled" : "slot"} />
+                ))}
+              </div>
+              <div className="capacity-footer">
+                <span><i className="slot-key filled-key" /> Loaded</span>
+                <span><i className="slot-key empty-key" /> Available</span>
+              </div>
+            </section>
+
             <div className="page-footer"><span>Machine actions are not available from this website.</span><span><ShieldCheck size={14} /> Hardware safety stays on the controller</span></div>
           </div>
         )}
