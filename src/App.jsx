@@ -4,7 +4,7 @@ import {
   ChevronDown, ChevronLeft, ChevronRight, CircleHelp, ClipboardList, Clock3,
   Droplet, Factory, Gauge, History, Layers, LayoutDashboard, Banana, Info, LogIn,
   LogOut, Menu, Power, Search, ShieldCheck, Thermometer, Trash2, Wifi, WifiOff,
-  Wind, X
+  Wind, X, Database, GitBranch, Cpu, Server
 } from "lucide-react";
 import {
   Area, AreaChart, Bar, BarChart, CartesianGrid, ResponsiveContainer,
@@ -268,6 +268,7 @@ export default function App() {
   const [history, setHistory] = useState(isFirebaseConfigured ? [] : DEMO_HISTORY);
   const [trend, setTrend] = useState(isFirebaseConfigured ? [] : DEMO_TREND);
   const [firebaseError, setFirebaseError] = useState("");
+  const [firebaseConnected, setFirebaseConnected] = useState(false);
   const [user, setUser] = useState(null);
   const [authChecking, setAuthChecking] = useState(Boolean(auth));
   const [loginIdentifier, setLoginIdentifier] = useState("");
@@ -430,6 +431,9 @@ export default function App() {
   useEffect(() => {
     if (!db) return undefined;
     const stops = [];
+    stops.push(onValue(ref(db, ".info/connected"), (snapshot) => {
+      setFirebaseConnected(snapshot.val() === true);
+    }, () => setFirebaseConnected(false)));
     stops.push(onValue(ref(db, "ecopeel/live"), (snapshot) => {
       setLive(snapshot.exists() ? snapshot.val() : null);
       setFirebaseError("");
@@ -1177,83 +1181,122 @@ export default function App() {
 
         {page === "about" && (
           <div className="page-content about-page">
-            <div className="page-heading">
+            <div className="page-heading about-page-heading">
               <div>
                 <div className="eyebrow">PROJECT OVERVIEW</div>
                 <h1>About EcoPeel</h1>
-                <p>Learn about the banana-peel bioplastic production system and its monitoring dashboard.</p>
+                <p>Discover the production system, connected hardware, and live monitoring platform.</p>
               </div>
+              <StatusPill tone={demoMode ? "neutral" : firebaseConnected && machineOnline ? "success" : "warning"}>
+                {demoMode ? "Preview environment" : firebaseConnected && machineOnline ? "System connected" : "Connection pending"}
+              </StatusPill>
             </div>
 
             <section className="about-hero panel">
-              <div className="about-hero-mark"><Banana size={30} strokeWidth={1.8} /></div>
-              <div className="about-hero-copy">
-                <div className="eyebrow">ECOPEEL · BIOPLASTIC SYSTEM</div>
-                <h2>From banana-peel material to a molded bioplastic product</h2>
-                <p>EcoPeel is a prototype production system designed to process banana-peel material through a sequence of grinding, ingredient dispensing, mixing and cooking, molding, transfer, and dehydration. This web application provides a central view of machine activity and recorded production batches.</p>
+              <div className="about-hero-main">
+                <div className="about-hero-mark"><Banana size={30} strokeWidth={1.8} /></div>
+                <div className="about-hero-copy">
+                  <div className="about-hero-kicker"><span className="about-kicker-line" /> ECOPEEL · BIOPLASTIC SYSTEM</div>
+                  <h2>Turning banana-peel material into a molded bioplastic product.</h2>
+                  <p>EcoPeel is a prototype automated production system that combines material preparation, controlled ingredient dispensing, mixing and cooking, molding, mechanical transfer, and dehydration. Its monitoring dashboard brings machine activity and production records together in one place.</p>
+                </div>
+              </div>
+              <div className="about-hero-stats">
+                <div><strong>06</strong><span>Production stages</span></div>
+                <div><strong>04</strong><span>Material sensors</span></div>
+                <div><strong>24/7</strong><span>Dashboard access</span></div>
               </div>
             </section>
 
+            <section className="about-system-panel panel">
+              <div className="about-panel-heading">
+                <div className="about-panel-title">
+                  <span className="about-heading-icon"><Wifi size={19} /></span>
+                  <div><h2>System connection</h2><p>Live connectivity and controller information</p></div>
+                </div>
+                <span className="about-item-count">05</span>
+              </div>
+
+              <div className={"about-telemetry-banner " + (machineOnline && !demoMode ? "is-connected" : "is-waiting")}>
+                <div className="about-telemetry-left">
+                  <span className="about-telemetry-icon">{machineOnline && !demoMode ? <Activity size={18} /> : <WifiOff size={18} />}</span>
+                  <div>
+                    <strong>{demoMode ? "Preview telemetry" : machineOnline ? "Machine telemetry available" : "Waiting for machine telemetry"}</strong>
+                    <p>{demoMode ? "Sample status is displayed in preview mode." : machineOnline ? "Latest controller data is available to the dashboard." : "No current controller update has been received."}</p>
+                  </div>
+                </div>
+                <StatusPill tone={demoMode ? "neutral" : machineOnline ? "success" : "warning"}>
+                  {demoMode ? "Preview" : machineOnline ? "Connected" : "Waiting"}
+                </StatusPill>
+              </div>
+
+              <div className="about-connection-list">
+                <div className="about-connection-row">
+                  <span className="about-connection-icon"><Server size={16} /></span>
+                  <div className="about-connection-name"><strong>Frontend hosting</strong><small>EcoPeel web application</small></div>
+                  <div className="about-connection-value"><strong>Vercel</strong><span className="about-connection-state is-neutral">Production hosting</span></div>
+                </div>
+                <div className="about-connection-row">
+                  <span className="about-connection-icon"><GitBranch size={16} /></span>
+                  <div className="about-connection-name"><strong>Source control</strong><small>Project code repository</small></div>
+                  <div className="about-connection-value"><strong>GitHub</strong><span className="about-connection-state is-neutral">Repository</span></div>
+                </div>
+                <div className="about-connection-row">
+                  <span className="about-connection-icon"><Database size={16} /></span>
+                  <div className="about-connection-name"><strong>Database</strong><small>Realtime machine data and records</small></div>
+                  <div className="about-connection-value"><strong>Firebase</strong><span className={"about-connection-state " + (demoMode ? "is-neutral" : firebaseConnected ? "is-connected" : "is-offline")}>{demoMode ? "Not configured" : firebaseConnected ? "Connected" : "Disconnected"}</span></div>
+                </div>
+                <div className="about-connection-row">
+                  <span className="about-connection-icon"><Cpu size={16} /></span>
+                  <div className="about-connection-name"><strong>Machine controller</strong><small>Production sequence and sensor inputs</small></div>
+                  <div className="about-connection-value"><strong>Arduino Mega 2560</strong><span className={"about-connection-state " + (demoMode ? "is-neutral" : machineOnline ? "is-connected" : "is-offline")}>{demoMode ? "Preview only" : machineOnline ? "Telemetry received" : "Waiting for data"}</span></div>
+                </div>
+                <div className="about-connection-row">
+                  <span className="about-connection-icon"><Wifi size={16} /></span>
+                  <div className="about-connection-name"><strong>Network controller</strong><small>Wi-Fi and Firebase bridge</small></div>
+                  <div className="about-connection-value"><strong>ESP32</strong><span className={"about-connection-state " + (demoMode ? "is-neutral" : firebaseConnected && machineOnline ? "is-connected" : "is-offline")}>{demoMode ? "Preview only" : firebaseConnected && machineOnline ? "Data received" : "Awaiting update"}</span></div>
+                </div>
+              </div>
+              <p className="about-connection-note">Controller availability is based on the latest machine telemetry received through the ESP32 bridge. Firebase connectivity reflects the web app's Realtime Database connection.</p>
+            </section>
+
             <div className="about-section-heading">
-              <div><h2>Production Process</h2><p>The machine follows these six main stages.</p></div>
+              <div><span className="about-section-eyebrow">HOW IT WORKS</span><h2>Production process</h2><p>Six coordinated stages take the material through the machine workflow.</p></div>
+              <span className="about-section-side-note">01 — 06 <span>PROCESS FLOW</span></span>
             </div>
             <div className="about-process-grid">
-              <article className="about-process-card">
-                <span className="about-process-number">01 · PREPARATION</span>
-                <h3>Grinding</h3>
-                <p>The pulverizer prepares the banana-peel material for the next production stage.</p>
-              </article>
-              <article className="about-process-card">
-                <span className="about-process-number">02 · INGREDIENTS</span>
-                <h3>Raw Material Dispensing</h3>
-                <p>Water, glycerin, corn starch, and vinegar are dispensed in sequence.</p>
-              </article>
-              <article className="about-process-card">
-                <span className="about-process-number">03 · MIXING</span>
-                <h3>Mixing &amp; Cooking</h3>
-                <p>The dispensed ingredients are mixed while the cooking stage is active.</p>
-              </article>
-              <article className="about-process-card">
-                <span className="about-process-number">04 · MOLDING</span>
-                <h3>Molder Dispensing</h3>
-                <p>The prepared mixture is dispensed into a molder when the machine is ready.</p>
-              </article>
-              <article className="about-process-card">
-                <span className="about-process-number">05 · TRANSFER</span>
-                <h3>Molder Transfer</h3>
-                <p>The lift and linear actuators move filled molders into the dehydrator.</p>
-              </article>
-              <article className="about-process-card">
-                <span className="about-process-number">06 · DRYING</span>
-                <h3>Dehydrating</h3>
-                <p>The filled molders go through the machine's dehydration stage.</p>
-              </article>
+              <article className="about-process-card"><div className="about-process-card-top"><span className="about-process-number">01</span><span className="about-process-icon"><Factory size={18} /></span></div><h3>Grinding</h3><p>The pulverizer prepares the banana-peel material for the next production stage.</p></article>
+              <article className="about-process-card"><div className="about-process-card-top"><span className="about-process-number">02</span><span className="about-process-icon"><Droplet size={18} /></span></div><h3>Raw Material Dispensing</h3><p>Water, glycerin, corn starch, and vinegar are dispensed in sequence.</p></article>
+              <article className="about-process-card"><div className="about-process-card-top"><span className="about-process-number">03</span><span className="about-process-icon"><Activity size={18} /></span></div><h3>Mixing &amp; Cooking</h3><p>The ingredients are combined and heated during the mixing stage.</p></article>
+              <article className="about-process-card"><div className="about-process-card-top"><span className="about-process-number">04</span><span className="about-process-icon"><Layers size={18} /></span></div><h3>Molder Dispensing</h3><p>The prepared mixture is dispensed into a molder when the machine is ready.</p></article>
+              <article className="about-process-card"><div className="about-process-card-top"><span className="about-process-number">05</span><span className="about-process-icon"><Gauge size={18} /></span></div><h3>Molder Transfer</h3><p>The lift and linear actuators position filled molders inside the dehydrator.</p></article>
+              <article className="about-process-card"><div className="about-process-card-top"><span className="about-process-number">06</span><span className="about-process-icon"><Wind size={18} /></span></div><h3>Dehydrating</h3><p>The filled molders pass through the machine's drying stage.</p></article>
             </div>
 
             <div className="about-details-grid">
               <section className="panel about-info-panel">
-                <div className="about-info-heading"><div className="about-info-icon"><Droplet size={18} /></div><div><h3>Raw Materials &amp; Sensors</h3><p>Material availability is checked by the machine controller.</p></div></div>
+                <div className="about-info-heading"><div className="about-info-icon"><Droplet size={18} /></div><div><h3>Raw materials &amp; sensors</h3><p>Material availability is checked before a batch begins.</p></div></div>
                 <div className="about-material-grid">
                   <div><strong>Water</strong><span>Non-contact liquid sensor</span></div>
                   <div><strong>Vinegar</strong><span>Non-contact liquid sensor</span></div>
                   <div><strong>Glycerin</strong><span>Non-contact liquid sensor</span></div>
                   <div><strong>Corn starch</strong><span>IR sensor</span></div>
                 </div>
-                <p className="about-note">The start interlock checks that all four materials are available before the production process begins.</p>
+                <p className="about-note">The machine start interlock checks all four material sensors. If a supply is empty, the process remains stopped until the material is replenished.</p>
               </section>
 
               <section className="panel about-info-panel">
-                <div className="about-info-heading"><div className="about-info-icon"><Activity size={18} /></div><div><h3>Web Monitoring</h3><p>Machine information is sent to the dashboard for viewing.</p></div></div>
+                <div className="about-info-heading"><div className="about-info-icon"><Activity size={18} /></div><div><h3>Monitoring &amp; production records</h3><p>Machine data is available from the public dashboard.</p></div></div>
                 <div className="about-monitor-list">
                   <div><Thermometer size={16} /><span>Temperature and humidity readings</span></div>
                   <div><Gauge size={16} /><span>Current machine state and process progress</span></div>
                   <div><Bell size={16} /><span>Machine alerts and notifications</span></div>
                   <div><History size={16} /><span>Completed and interrupted batch records</span></div>
                 </div>
-                <p className="about-note">The Arduino Mega manages the machine sequence. The ESP32 sends machine updates to Firebase, which the EcoPeel web application reads.</p>
+                <p className="about-note">The Arduino Mega controls the machine sequence. The ESP32 forwards telemetry to Firebase, and the EcoPeel web application displays the latest readings and records.</p>
               </section>
             </div>
-            <div className="page-footer"><span>EcoPeel · Banana-peel bioplastic production and monitoring</span><span><Info size={14} /> Project information</span></div>
+            <footer className="page-footer"><span>EcoPeel · Banana-peel bioplastic production and monitoring</span><span><Info size={14} /> Project information</span></footer>
           </div>
         )}
 
