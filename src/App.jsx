@@ -7,10 +7,6 @@ import {
   Wind, X, Database, GitBranch, Cpu, Server, ArrowLeftRight, Eye, EyeOff
 } from "lucide-react";
 import {
-  Area, AreaChart, Bar, BarChart, CartesianGrid, ResponsiveContainer,
-  Tooltip, XAxis, YAxis
-} from "recharts";
-import {
   EmailAuthProvider, onAuthStateChanged, reauthenticateWithCredential,
   signInWithEmailAndPassword, signOut, updatePassword
 } from "firebase/auth";
@@ -47,19 +43,9 @@ const DEMO_HISTORY = [
   { id: "b-100", batchId: "EP-2026-0100", startedAt: "2026-10-26T09:04:00+08:00", endedAt: "2026-10-26T09:25:00+08:00", durationMinutes: 21, status: "Interrupted", molders: 2, maxTemperature: 71.5 }
 ];
 
-const DEMO_TREND = [
-  { time: "07:00", temperature: 38, humidity: 46 },
-  { time: "07:10", temperature: 43, humidity: 43 },
-  { time: "07:20", temperature: 49, humidity: 40 },
-  { time: "07:30", temperature: 55, humidity: 36 },
-  { time: "07:40", temperature: 59, humidity: 34 },
-  { time: "07:50", temperature: 62, humidity: 31 },
-  { time: "08:00", temperature: 61, humidity: 32 }
-];
-
 const PROCESS_STEPS = [
   "Grinding", "Raw Material Dispensing", "Mixing & Cooking",
-  "Waiting for Molder", "Molder Dispensing", "Molder Transfer", "Dehydrating"
+  "Molder Dispensing", "Molder Transfer", "Dehydrating"
 ];
 
 const MATERIAL_SENSORS = [
@@ -168,29 +154,15 @@ function getCurrentStepIndex(live) {
   const text = [
     live.currentStep, live.process, live.status, live.currentState, live.machineState
   ].filter((value) => typeof value === "string").join(" ").trim().toLowerCase();
-  const reportedState = [
-    live.status, live.currentState, live.machineState
-  ].filter((value) => typeof value === "string").join(" ").trim().toLowerCase();
 
   if (!text) return null;
   if (/raw material|water dispensing|glycerin|corn starch|vinegar dispensing|dispensing raw/.test(text)) return 1;
-
-  // Prioritize the actual waiting state over older firmware that labels its
-  // currentStep as "Molder Dispensing" while waiting for the next empty molder.
-  if (/waiting for molder|awaiting molder/.test(reportedState) || /waiting for molder|awaiting molder/.test(text)) return 3;
-  if (/molder dispensing|dispensing molder/.test(text)) return 4;
-  if (/molder transfer|transfer molder|transferring molder|linear actuator|lift motor|layer position|transfer(?!ring?)/.test(text)) return 5;
   if (/mixing|mix(?:ing)?\b|cooking|cook(?:ing)?\b/.test(text)) return 2;
-  if (/dehydrat|dehydration|drying|dry cycle/.test(text)) return 6;
+  if (/molder transfer|transfer molder|transferring molder|linear actuator|lift motor|layer position|transfer(?!ring?)/.test(text)) return 4;
+  if (/waiting for molder|awaiting molder|molder dispensing|dispensing molder/.test(text)) return 3;
+  if (/dehydrat|dehydration|drying|dry cycle/.test(text)) return 5;
   if (/grind|pulver/.test(text)) return 0;
   return null;
-}
-
-function formatClock(value) {
-  if (!value) return "—";
-  const date = typeof value === "number" ? new Date(value) : new Date(value);
-  if (Number.isNaN(date.getTime())) return "—";
-  return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 }
 
 function formatDate(value) {
@@ -274,7 +246,6 @@ export default function App() {
   const [live, setLive] = useState(isFirebaseConfigured ? null : DEMO_LIVE);
   const [notifications, setNotifications] = useState(isFirebaseConfigured ? [] : DEMO_NOTIFICATIONS);
   const [history, setHistory] = useState(isFirebaseConfigured ? [] : DEMO_HISTORY);
-  const [trend, setTrend] = useState(isFirebaseConfigured ? [] : DEMO_TREND);
   const [firebaseError, setFirebaseError] = useState("");
   const [firebaseConnected, setFirebaseConnected] = useState(false);
   const [user, setUser] = useState(null);
@@ -452,28 +423,6 @@ export default function App() {
       rows.sort((a, b) => Number(b.createdAt || b.timestamp || 0) - Number(a.createdAt || a.timestamp || 0));
       setNotifications(rows);
     }, () => setFirebaseError("Could not read notifications. Check your database rules.")));
-    stops.push(onValue(ref(db, "ecopeel/telemetry"), (snapshot) => {
-      const rows = normalizeList(snapshot.val());
-      rows.sort((a, b) => new Date(a.timestamp || a.time || 0).getTime() - new Date(b.timestamp || b.time || 0).getTime());
-
-      // Plot only explicitly named dehydrator sensor fields.
-      // Do not fall back to "temperature": the Mega uses that field for the DS18B20 mixture sensor.
-      const validDehydratorRows = rows.flatMap((row) => {
-        if (row.dehydratorTemperature == null || row.dehydratorHumidity == null) return [];
-        const temperature = Number(row.dehydratorTemperature);
-        const humidity = Number(row.dehydratorHumidity);
-        if (!Number.isFinite(temperature) || !Number.isFinite(humidity)) return [];
-        if (temperature < -40 || temperature > 80 || humidity < 0 || humidity > 100) return [];
-        return [{
-          ...row,
-          time: row.time || formatClock(row.timestamp),
-          temperature,
-          humidity
-        }];
-      });
-
-      setTrend(validDehydratorRows.slice(-24));
-    }, () => {}));
     if (isAdmin) {
       stops.push(onValue(ref(db, "ecopeel/history"), (snapshot) => {
         const rows = normalizeList(snapshot.val());
@@ -900,13 +849,7 @@ export default function App() {
               })}
             </div>
 
-            <div className="dashboard-grid">
-              <section className="panel temperature-panel">
-                <div className="panel-header"><div><h3>Dehydrator Environment</h3><p>Dehydrator DHT22 temperature and humidity · Recent sensor history</p></div><span className="chart-period">Recent Readings <ChevronDown size={14} /></span></div>
-                {trend.length ? <div className="chart-wrap"><ResponsiveContainer width="100%" height="100%"><AreaChart data={trend} margin={{ top: 10, right: 8, left: -18, bottom: 0 }}><defs><linearGradient id="temperatureFill" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#43875e" stopOpacity={0.18} /><stop offset="100%" stopColor="#43875e" stopOpacity={0.01} /></linearGradient></defs><CartesianGrid strokeDasharray="3 5" vertical={false} stroke="#e9eee7" /><XAxis dataKey="time" tick={{ fill: "#89938a", fontSize: 11 }} axisLine={false} tickLine={false} /><YAxis tick={{ fill: "#89938a", fontSize: 11 }} axisLine={false} tickLine={false} /><Tooltip contentStyle={{ borderRadius: 10, border: "1px solid #e5ebe2", fontSize: 12 }} /><Area type="monotone" dataKey="temperature" name="Temperature °C" stroke="#43875e" strokeWidth={2.5} fill="url(#temperatureFill)" /><Area type="monotone" dataKey="humidity" name="Humidity %" stroke="#5d91c9" strokeWidth={2} fill="transparent" /></AreaChart></ResponsiveContainer></div> : <EmptyState title="No sensor history yet" text="Telemetry readings will appear here when the ESP32 starts sending data to Firebase." />}
-                <div className="chart-legend"><span><i className="legend-line green-line" /> Temperature (°C)</span><span><i className="legend-line blue-line" /> Humidity (%)</span></div>
-              </section>
-
+            <div className="dashboard-grid process-only-grid">
               <section className="panel process-panel">
                 <div className="panel-header"><div><h3>Production Workflow</h3><p>Process progress at a glance</p></div><span className="workflow-icon"><Activity size={17} /></span></div>
                 <div className="workflow-progress"><div className="workflow-progress-top"><span>Current batch</span><strong>{currentProgress}%</strong></div><div className="progress-track"><div className="progress-value" style={{ width: currentProgress + "%" }} /></div></div>
@@ -970,7 +913,7 @@ export default function App() {
             <div className="panel workflow-full-panel">
               <div className="panel-header">
                 <div><h3>Production Sequence</h3><p>Process states reported or expected by the machine controller</p></div>
-                <span className="workflow-stage-count">{currentStepIndex === null ? "7 stages" : "Stage " + (currentStepIndex + 1) + " of " + PROCESS_STEPS.length}</span>
+                <span className="workflow-stage-count">{currentStepIndex === null ? "6 stages" : "Stage " + (currentStepIndex + 1) + " of " + PROCESS_STEPS.length}</span>
               </div>
               <div className="machine-progress-block">
                 <div className="machine-progress-heading">
@@ -988,11 +931,11 @@ export default function App() {
               </div>
               <div className="full-process-grid">
                 {PROCESS_STEPS.map((step, i) => {
-                  const stepIsCurrent = currentStepIndex === i || (currentStepIndex === null && demoMode && i === 6);
+                  const stepIsCurrent = currentStepIndex === i || (currentStepIndex === null && demoMode && i === 5);
                   const stepIsComplete = currentStepIndex !== null && i < currentStepIndex;
                   const stepClass = stepIsCurrent ? "current" : stepIsComplete ? "complete" : "upcoming";
                   const statusLabel = stepIsCurrent ? "Current Stage" : stepIsComplete ? "Completed Stage" : currentStepIndex === null ? "Awaiting Status Mapping" : "Upcoming Stage";
-                  const StepIcon = [Factory, Droplet, Activity, Clock3, Layers, ArrowLeftRight, Wind][i];
+                  const StepIcon = [Factory, Droplet, Activity, Layers, ArrowLeftRight, Wind][i];
                   return <div key={step} className={"full-process-card " + stepClass}>
                     <div className="full-process-card-top">
                       <span className="full-step-index">{String(i + 1).padStart(2, "0")}</span>
