@@ -288,6 +288,10 @@ export default function App() {
   );
   const unreadCount = notifications.filter((n) => !n.read && !n.systemRecord && !n._systemRecord).length;
   const currentStatus = live?.status || live?.currentState || "Waiting for device";
+  const isBatchCompleted = Boolean(
+    (live?.batchCompleted === true || String(live?.batchStatus || "").toLowerCase() === "completed") &&
+    String(live?.currentState || live?.status || "").trim().toLowerCase() === "idle"
+  );
   const machineOnline = demoMode ? true : Boolean(live && (live.online === true || live.isOnline === true));
   const explicitPowerState = [
     live?.machineOn, live?.isMachineOn, live?.powerOn, live?.isOn
@@ -311,12 +315,14 @@ export default function App() {
   const currentStepIndex = getCurrentStepIndex(live);
   const hasReportedProgress = live?.progress !== undefined && live?.progress !== null &&
     live?.progress !== "" && Number.isFinite(Number(live.progress));
-  const currentProgress = hasReportedProgress
-    ? Math.min(100, Math.max(0, Number(live.progress)))
-    : currentStepIndex !== null
-      ? Math.round((currentStepIndex / Math.max(1, PROCESS_STEPS.length - 1)) * 100)
-      : 0;
-  const hasProgressData = hasReportedProgress || currentStepIndex !== null;
+  const currentProgress = isBatchCompleted
+    ? 100
+    : hasReportedProgress
+      ? Math.min(100, Math.max(0, Number(live.progress)))
+      : currentStepIndex !== null
+        ? Math.round((currentStepIndex / Math.max(1, PROCESS_STEPS.length - 1)) * 100)
+        : 0;
+  const hasProgressData = isBatchCompleted || hasReportedProgress || currentStepIndex !== null;
   const visibleHistory = useMemo(() => {
     const query = historySearch.trim().toLowerCase();
     return history.filter((item) => {
@@ -808,7 +814,7 @@ export default function App() {
               <div className="overview-label"><span className="overview-pulse" /><div><strong>Machine Overview</strong><small>{demoMode ? "Sample machine status" : live ? "Latest Firebase status" : "Waiting for first device update"}</small></div></div>
               <div className="overview-divider" />
               <div className="overview-stat"><span>Current state</span><strong>{currentStatus}</strong></div>
-              <div className="overview-stat"><span>Current process</span><strong>{live?.currentStep || live?.process || (live ? currentStatus : "No data yet")}</strong></div>
+              <div className="overview-stat"><span>Current process</span><strong>{isBatchCompleted ? "Batch Completed" : live?.currentStep || live?.process || (live ? currentStatus : "No data yet")}</strong></div>
               <div className="overview-stat"><span>Last update</span><strong>{live ? relativeTime(live.updatedAt || live.timestamp) : "No update yet"}</strong></div>
               <div className="overview-power">
                 <Power size={17} />
@@ -851,15 +857,15 @@ export default function App() {
 
             <div className="dashboard-grid process-only-grid">
               <section className="panel process-panel">
-                <div className="panel-header"><div><h3>Production Workflow</h3><p>Process progress at a glance</p></div><span className="workflow-icon"><Activity size={17} /></span></div>
-                <div className="workflow-progress"><div className="workflow-progress-top"><span>Current batch</span><strong>{currentProgress}%</strong></div><div className="progress-track"><div className="progress-value" style={{ width: currentProgress + "%" }} /></div></div>
+                <div className="panel-header"><div><h3>Production Workflow</h3><p>{isBatchCompleted ? "All production stages completed" : "Process progress at a glance"}</p></div><span className="workflow-icon"><Activity size={17} /></span></div>
+                <div className="workflow-progress"><div className="workflow-progress-top"><span>{isBatchCompleted ? "Completed batch" : "Current batch"}</span><strong>{currentProgress}%</strong></div><div className="progress-track"><div className="progress-value" style={{ width: currentProgress + "%" }} /></div></div>
                 <div className="process-list">
                   {PROCESS_STEPS.map((step, index) => {
-                    const detectedIndex = currentStepIndex === null && demoMode ? 5 : currentStepIndex;
+                    const detectedIndex = isBatchCompleted ? PROCESS_STEPS.length : currentStepIndex === null && demoMode ? 5 : currentStepIndex;
                     const activeIndex = detectedIndex ?? -1;
-                    const complete = activeIndex >= 0 && index < activeIndex;
-                    const active = index === activeIndex;
-                    return <div className={"process-step " + (complete ? "complete" : "") + (active ? " current" : "")} key={step}><div className="step-marker">{complete ? <CheckCircle2 size={16} /> : <span>{index + 1}</span>}</div><div className="step-label"><strong>{step}</strong>{active && <small>Current stage</small>}</div>{active && <span className="step-active-tag">Active</span>}</div>;
+                    const complete = isBatchCompleted || (activeIndex >= 0 && index < activeIndex);
+                    const active = !isBatchCompleted && index === activeIndex;
+                    return <div className={"process-step " + (complete ? "complete" : "") + (active ? " current" : "")} key={step}><div className="step-marker">{complete ? <CheckCircle2 size={16} /> : <span>{index + 1}</span>}</div><div className="step-label"><strong>{step}</strong>{active && <small>Current stage</small>}{isBatchCompleted && <small>Completed</small>}</div>{active && <span className="step-active-tag">Active</span>}</div>;
                   })}
                 </div>
                 <button className="text-link" onClick={() => navigate("machine")}>View machine details <ChevronRight size={15} /></button>
