@@ -921,3 +921,43 @@ h1 { font: 800 clamp(23px, 2vw, 29px)/1.22 Manrope, sans-serif; letter-spacing: 
   .about-page .about-hero-tags { gap: 6px; margin-top: 12px; }
   .about-page .about-hero-tags span { font-size: 7px; min-height: 22px; padding: 4px 7px; }
 }
+
+
+/* Unified dark-green gradient icon tiles across the entire About page */
+.about-page .about-hero .about-hero-mark {
+  color: #ffffff !important;
+  background: linear-gradient(145deg, #3b8752 0%, #245f39 56%, #194a2d 100%) !important;
+  border: 1px solid #6a9c75 !important;
+  box-shadow: 0 6px 16px #0a321d35, inset 0 1px 0 #ffffff35 !important;
+}
+.about-page .about-heading-icon,
+.about-page .about-telemetry-banner .about-telemetry-icon,
+.about-page .about-connection-row .about-connection-icon,
+.about-page .about-process-card .about-process-icon,
+.about-page .about-info-panel .about-info-icon {
+  color: #ffffff !important;
+  background: linear-gradient(145deg, #34794a 0%, #245d38 55%, #19482d 100%) !important;
+  border: 1px solid #2d6b40 !important;
+  box-shadow: 0 4px 10px #173f2824, inset 0 1px 0 #ffffff30 !important;
+}
+.about-page .about-telemetry-banner.is-waiting .about-telemetry-icon {
+  color: #ffffff !important;
+  background: linear-gradient(145deg, #34794a 0%, #245d38 55%, #19482d 100%) !important;
+  border-color: #2d6b40 !important;
+}
+.about-page .about-monitor-list > div > svg {
+  color: #ffffff !important;
+  background: linear-gradient(145deg, #34794a 0%, #245d38 55%, #19482d 100%) !important;
+  border: 1px solid #2d6b40 !important;
+  border-radius: 8px;
+  box-shadow: 0 3px 8px #173f281c, inset 0 1px 0 #ffffff30;
+  box-sizing: content-box;
+  width: 16px;
+  height: 16px;
+  padding: 6px;
+  flex: 0 0 auto;
+}
+.about-page .about-process-card:hover .about-process-icon {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 13px #173f2830, inset 0 1px 0 #ffffff38 !important;
+}
