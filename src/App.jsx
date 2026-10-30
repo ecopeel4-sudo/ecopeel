@@ -301,15 +301,12 @@ export default function App() {
     [live]
   );
   const materialSensorSignature = materialSensorStates.map((sensor) => sensor.key + ":" + sensor.status).join("|");
-  const notificationRecords = notifications.filter((item) => !item.systemRecord && !item._systemRecord);
-  const notificationTotal = notificationRecords.length;
-  const resolvedNotificationCount = notificationRecords.filter((item) => item.active === false).length;
   const visibleNotifications = useMemo(
     () => notifications.filter((item) => !item.systemRecord && !item._systemRecord &&
       (notificationFilter === "all" || getNotificationCategory(item) === notificationFilter)),
     [notifications, notificationFilter]
   );
-  const unreadCount = notificationRecords.filter((item) => !item.read).length;
+  const unreadCount = notifications.filter((n) => !n.read && !n.systemRecord && !n._systemRecord).length;
   const currentStatus = live?.status || live?.currentState || "Waiting for device";
   const machineOnline = demoMode ? true : Boolean(live && (live.online === true || live.isOnline === true));
   const explicitPowerState = [
@@ -1012,47 +1009,20 @@ export default function App() {
         )}
 
         {page === "notifications" && (
-          <div className="page-content notifications-page">
-            <div className="page-heading notifications-page-heading">
-              <div>
-                <div className="eyebrow">SYSTEM ACTIVITY</div>
-                <h1>Notifications</h1>
-                <p>Review machine alerts, production updates, and important system events.</p>
-              </div>
-              <div className="notification-heading-status">
-                <span className="notification-heading-icon"><Bell size={17} /></span>
-                <div><strong>{unreadCount}</strong><span>Unread Notifications</span></div>
-              </div>
+          <div className="page-content">
+            <div className="page-heading">
+              <div><div className="eyebrow">SYSTEM MESSAGES</div><h1>Notifications</h1><p>Filter machine events, review alerts, and manage read notifications.</p></div>
+              <div className="notification-count-card"><Bell size={17} /><strong>{unreadCount}</strong><span>unread</span></div>
             </div>
-
-            <div className="notifications-overview-grid">
-              <article className="notification-overview-card">
-                <span className="notification-overview-icon total"><Bell size={17} /></span>
-                <div><span className="notification-overview-label">Total Notifications</span><strong>{notificationTotal}</strong><small>Recorded machine events</small></div>
-              </article>
-              <article className="notification-overview-card unread">
-                <span className="notification-overview-icon unread"><Clock3 size={17} /></span>
-                <div><span className="notification-overview-label">Unread</span><strong>{unreadCount}</strong><small>Awaiting review</small></div>
-              </article>
-              <article className="notification-overview-card resolved">
-                <span className="notification-overview-icon resolved"><CheckCircle2 size={17} /></span>
-                <div><span className="notification-overview-label">Resolved</span><strong>{resolvedNotificationCount}</strong><small>Issues cleared or restored</small></div>
-              </article>
-            </div>
-
             <section className="panel notifications-page-panel">
               <div className="panel-header notification-panel-header">
-                <div className="notification-panel-title">
-                  <div className="notification-panel-title-icon"><Bell size={17} /></div>
-                  <div><h3>Notification Center</h3><p>Machine alerts and production updates from your EcoPeel system.</p></div>
-                </div>
+                <div><h3>All Notifications</h3><p>{visibleNotifications.length} matching record{visibleNotifications.length === 1 ? "" : "s"} · {unreadCount} unread</p></div>
                 <div className="notification-header-tools">
-                  {isAdmin && <button type="button" className="notification-action-button mark-read notification-mark-all-button" disabled={markingAllRead || unreadCount === 0} onClick={handleMarkAllNotificationsRead} title={unreadCount > 0 ? "Mark all " + unreadCount + " unread notifications as read" : "All notifications are already read"}>
+                  {isAdmin && <button type="button" className="notification-action-button mark-read notification-mark-all-button" disabled={markingAllRead || unreadCount === 0} onClick={handleMarkAllNotificationsRead} title={unreadCount > 0 ? "Mark all notifications as read" : "All notifications are already read"}>
                     {markingAllRead ? <span className="notification-button-spinner" /> : <Check size={14} />}
                     <span>{markingAllRead ? "Marking..." : "Mark all as read"}</span>
-                    <span className="notification-mark-all-count">{unreadCount}</span>
                   </button>}
-                  <label className="notification-type-filter"><span>Filter By Type</span><select className="filter-select" aria-label="Filter notifications by type" value={notificationFilter} onChange={(event) => setNotificationFilter(event.target.value)}>{NOTIFICATION_FILTERS.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}</select></label>
+                  <label className="notification-type-filter"><span>Type</span><select className="filter-select" aria-label="Filter notifications by type" value={notificationFilter} onChange={(event) => setNotificationFilter(event.target.value)}>{NOTIFICATION_FILTERS.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}</select></label>
                 </div>
               </div>
               {notificationActionError && <div className="history-action-error" role="alert"><AlertTriangle size={15} /><span>{notificationActionError}</span></div>}
@@ -1390,7 +1360,7 @@ function NotificationRow({ item, expanded = false, isAdmin = false, busy = false
       <div className="notification-content">
         <div className="notification-title-line">
           <strong>{item.title || item.event || "Machine update"}</strong>
-          {!item.read && <span className="notification-unread-pill">Unread</span>}
+          {!item.read && <span className="unread-dot" />}
           <span className={"notification-category-pill " + tone}>{notificationCategoryLabel(category)}</span>
           {item.active === false && <span className="notification-resolved-pill">Resolved</span>}
         </div>
