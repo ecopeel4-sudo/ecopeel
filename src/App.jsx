@@ -1062,11 +1062,11 @@ export default function App() {
                   </div>
                 </div>
                 <div className="production-supporting-metric">
-                  <div className="production-supporting-icon purple"><Clock3 size={20} strokeWidth={1.9} /></div>
+                  <div className="production-supporting-icon purple"><AlertTriangle size={20} strokeWidth={1.9} /></div>
                   <div className="production-supporting-copy">
-                    <span className="production-supporting-label">Average Batch Duration</span>
-                    <div className="production-supporting-value">{history.length ? Math.round(history.reduce((sum, r) => sum + Number(r.durationMinutes || 0), 0) / history.length) : "—"}<small>{history.length ? " min" : ""}</small></div>
-                    <span className="production-supporting-caption">Based on stored durations</span>
+                    <span className="production-supporting-label">Interrupted Batches</span>
+                    <div className="production-supporting-value">{history.length ? history.filter((row) => String(row.status || "").trim().toLowerCase() === "interrupted").length : "—"}</div>
+                    <span className="production-supporting-caption">Across all recorded batches</span>
                   </div>
                 </div>
               </div>
