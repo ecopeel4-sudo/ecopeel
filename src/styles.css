@@ -1005,9 +1005,9 @@ h1 { font: 800 clamp(23px, 2vw, 29px)/1.22 Manrope, sans-serif; letter-spacing: 
 }
 
 
-/* Uppercase title and label hierarchy for the About EcoPeel page */
+/* Title Case hierarchy for the About EcoPeel page */
 .about-page .about-hero-copy h2 {
-  text-transform: uppercase;
+  text-transform: capitalize;
   letter-spacing: .1px;
   line-height: 1.28;
   font-size: clamp(18px, 1.85vw, 24px);
@@ -1016,34 +1016,34 @@ h1 { font: 800 clamp(23px, 2vw, 29px)/1.22 Manrope, sans-serif; letter-spacing: 
 .about-page .about-section-heading h2,
 .about-page .about-process-card h3,
 .about-page .about-info-heading h3 {
-  text-transform: uppercase;
-  letter-spacing: .55px;
+  text-transform: capitalize;
+  letter-spacing: .25px;
 }
 .about-page .about-panel-title h2,
 .about-page .about-section-heading h2 {
-  font-size: 11px;
-  letter-spacing: .9px;
+  font-size: 12px;
+  letter-spacing: .2px;
 }
 .about-page .about-process-card h3,
 .about-page .about-info-heading h3 {
-  font-size: 9px;
-  letter-spacing: .65px;
+  font-size: 10px;
+  letter-spacing: .15px;
 }
 .about-page .about-connection-name strong,
 .about-page .about-connection-value > strong,
 .about-page .about-material-grid strong {
-  text-transform: uppercase;
-  letter-spacing: .45px;
-  font-size: 8px;
+  text-transform: capitalize;
+  letter-spacing: .15px;
+  font-size: 9px;
 }
 .about-page .about-monitor-list > div > span {
-  text-transform: uppercase;
-  letter-spacing: .3px;
-  font-size: 8px;
+  text-transform: capitalize;
+  letter-spacing: .1px;
+  font-size: 9px;
 }
 .about-page .about-hero-tags span {
-  text-transform: uppercase;
-  letter-spacing: .35px;
+  text-transform: capitalize;
+  letter-spacing: .15px;
 }
 @media (max-width: 540px) {
   .about-page .about-hero-copy h2 { font-size: 16px; }
