@@ -1144,3 +1144,17 @@ h1 { font: 800 clamp(23px, 2vw, 29px)/1.22 Manrope, sans-serif; letter-spacing: 
     flex-basis: 31px;
   }
 }
+
+
+/* Soft EcoPeel green header for Production History table */
+.history-records-table thead th {
+  background: #e8f2e7;
+  color: #456b4b;
+  border-bottom: 1px solid #d6e5d4;
+}
+.history-records-table thead th .table-heading {
+  color: #456b4b;
+}
+.history-records-table thead th .table-heading svg {
+  color: #63866a;
+}
