@@ -775,7 +775,7 @@ export default function App() {
         </div>
         <div className="sidebar-project">
           <span className="project-avatar"><Factory size={16} /></span>
-          <span><strong>Bioplastic Machine</strong><small>Monitoring Station 01</small></span>
+          <span><strong>Bioplastic Machine</strong><small>Monitoring Station</small></span>
           <ChevronDown size={15} className="project-chevron" />
         </div>
         <nav className="side-nav" aria-label="Main navigation">
