@@ -858,3 +858,66 @@ h1 { font: 800 clamp(23px, 2vw, 29px)/1.22 Manrope, sans-serif; letter-spacing: 
   .about-connection-icon { width: 28px; height: 28px; }
   .about-process-icon { width: 33px; height: 33px; }
 }
+
+
+/* Wide project banner inspired by the FloodCast About-page layout */
+.about-page { padding-top: 18px; }
+.about-page .about-hero {
+  position: relative; display: block; min-height: 238px; padding: 28px 30px;
+  margin: 0 0 20px; overflow: hidden; border: 0; border-radius: 13px;
+  color: #fff; background: linear-gradient(112deg, #173f2b 0%, #226c49 48%, #118b83 100%);
+  box-shadow: 0 9px 24px #17492d20;
+}
+.about-page .about-hero::before {
+  content: ""; position: absolute; top: -168px; right: -46px; width: 330px; height: 330px;
+  border: 1px solid #ffffff24; border-radius: 50%;
+  box-shadow: 0 0 0 27px #ffffff0d, 0 0 0 56px #ffffff0a, 0 0 0 87px #ffffff08;
+  pointer-events: none;
+}
+.about-page .about-hero::after {
+  content: ""; position: absolute; right: 75px; top: -34px; width: 205px; height: 205px;
+  border: 1px solid #ffffff15; border-radius: 50%; pointer-events: none;
+}
+.about-page .about-hero-main {
+  position: relative; z-index: 1; display: flex; align-items: flex-start; gap: 15px; max-width: 920px;
+}
+.about-page .about-hero-mark {
+  display: grid; place-items: center; width: 42px; height: 42px; flex: 0 0 42px; margin-top: 1px;
+  border: 1px solid #ffffff42; border-radius: 11px; color: #fff; background: #ffffff18;
+  box-shadow: inset 0 1px 0 #ffffff24;
+}
+.about-page .about-hero-copy { min-width: 0; }
+.about-page .about-hero-kicker {
+  display: flex; align-items: center; gap: 8px; margin: 0 0 12px;
+  color: #d7f0dd; font-size: 8px; font-weight: 800; letter-spacing: 1.55px;
+}
+.about-page .about-kicker-line { width: 18px; height: 2px; border-radius: 2px; background: #b5e2c1; }
+.about-page .about-hero-copy h2 {
+  max-width: 790px; margin: 0 0 10px; color: #fff;
+  font: 800 clamp(21px, 2.15vw, 28px)/1.2 Manrope, sans-serif;
+  letter-spacing: -.8px; text-shadow: 0 2px 8px #0b2b1a24;
+}
+.about-page .about-hero-copy p { max-width: 790px; margin: 0; color: #e2f0e6; font-size: 10px; line-height: 1.75; }
+.about-page .about-hero-tags { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 15px; }
+.about-page .about-hero-tags span {
+  display: inline-flex; align-items: center; gap: 5px; min-height: 24px; padding: 4px 9px;
+  border: 1px solid #ffffff3b; border-radius: 20px; color: #fff; background: #ffffff13;
+  font-size: 8px; font-weight: 700; white-space: nowrap; backdrop-filter: blur(4px);
+}
+.about-page .about-hero-tags svg { color: #d6f0dc; }
+@media (max-width: 800px) {
+  .about-page .about-hero { min-height: 0; padding: 24px 22px; }
+  .about-page .about-hero::before { right: -165px; }
+}
+@media (max-width: 540px) {
+  .about-page { padding-top: 15px; }
+  .about-page .about-hero { padding: 20px 17px; border-radius: 11px; }
+  .about-page .about-hero-main { gap: 11px; }
+  .about-page .about-hero-mark { width: 35px; height: 35px; flex-basis: 35px; }
+  .about-page .about-hero-mark svg { width: 22px; height: 22px; }
+  .about-page .about-hero-kicker { font-size: 7px; margin-bottom: 10px; }
+  .about-page .about-hero-copy h2 { font-size: 19px; }
+  .about-page .about-hero-copy p { font-size: 9px; }
+  .about-page .about-hero-tags { gap: 6px; margin-top: 12px; }
+  .about-page .about-hero-tags span { font-size: 7px; min-height: 22px; padding: 4px 7px; }
+}
