@@ -1181,30 +1181,20 @@ export default function App() {
 
         {page === "about" && (
           <div className="page-content about-page">
-            <div className="page-heading about-page-heading">
-              <div>
-                <div className="eyebrow">PROJECT OVERVIEW</div>
-                <h1>About EcoPeel</h1>
-                <p>Discover the production system, connected hardware, and live monitoring platform.</p>
-              </div>
-              <StatusPill tone={demoMode ? "neutral" : firebaseConnected && machineOnline ? "success" : "warning"}>
-                {demoMode ? "Preview environment" : firebaseConnected && machineOnline ? "System connected" : "Connection pending"}
-              </StatusPill>
-            </div>
-
             <section className="about-hero panel">
               <div className="about-hero-main">
-                <div className="about-hero-mark"><Banana size={30} strokeWidth={1.8} /></div>
+                <div className="about-hero-mark"><Banana size={29} strokeWidth={1.9} /></div>
                 <div className="about-hero-copy">
-                  <div className="about-hero-kicker"><span className="about-kicker-line" /> ECOPEEL · BIOPLASTIC SYSTEM</div>
-                  <h2>Turning banana-peel material into a molded bioplastic product.</h2>
-                  <p>EcoPeel is a prototype automated production system that combines material preparation, controlled ingredient dispensing, mixing and cooking, molding, mechanical transfer, and dehydration. Its monitoring dashboard brings machine activity and production records together in one place.</p>
+                  <div className="about-hero-kicker"><span className="about-kicker-line" /> ABOUT THE PROJECT</div>
+                  <h2>EcoPeel: A Banana-Peel Bioplastic Production and Monitoring System</h2>
+                  <p>EcoPeel is a prototype automated system designed to transform prepared banana-peel material through controlled ingredient dispensing, mixing and cooking, molding, mechanical transfer, and dehydration. Its connected dashboard brings machine telemetry, raw-material availability, alerts, and production history into one place.</p>
+                  <div className="about-hero-tags">
+                    <span><Factory size={12} /> Automated Processing</span>
+                    <span><Droplet size={12} /> Raw Material Sensors</span>
+                    <span><Activity size={12} /> IoT Machine Monitoring</span>
+                    <span><History size={12} /> Production Records</span>
+                  </div>
                 </div>
-              </div>
-              <div className="about-hero-stats">
-                <div><strong>06</strong><span>Production stages</span></div>
-                <div><strong>04</strong><span>Material sensors</span></div>
-                <div><strong>24/7</strong><span>Dashboard access</span></div>
               </div>
             </section>
 
