@@ -1047,9 +1047,10 @@ export default function App() {
                   <div><h3>Notification Center</h3><p>Machine alerts and production updates from your EcoPeel system.</p></div>
                 </div>
                 <div className="notification-header-tools">
-                  {isAdmin && unreadCount > 0 && <button type="button" className="notification-action-button mark-read notification-mark-all-button" disabled={markingAllRead} onClick={handleMarkAllNotificationsRead} title="Mark all notifications as read">
+                  {isAdmin && <button type="button" className="notification-action-button mark-read notification-mark-all-button" disabled={markingAllRead || unreadCount === 0} onClick={handleMarkAllNotificationsRead} title={unreadCount > 0 ? "Mark all " + unreadCount + " unread notifications as read" : "All notifications are already read"}>
                     {markingAllRead ? <span className="notification-button-spinner" /> : <Check size={14} />}
                     <span>{markingAllRead ? "Marking..." : "Mark all as read"}</span>
+                    <span className="notification-mark-all-count">{unreadCount}</span>
                   </button>}
                   <label className="notification-type-filter"><span>Filter By Type</span><select className="filter-select" aria-label="Filter notifications by type" value={notificationFilter} onChange={(event) => setNotificationFilter(event.target.value)}>{NOTIFICATION_FILTERS.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}</select></label>
                 </div>
@@ -1389,7 +1390,7 @@ function NotificationRow({ item, expanded = false, isAdmin = false, busy = false
       <div className="notification-content">
         <div className="notification-title-line">
           <strong>{item.title || item.event || "Machine update"}</strong>
-          {!item.read && <span className="unread-dot" />}
+          {!item.read && <span className="notification-unread-pill">Unread</span>}
           <span className={"notification-category-pill " + tone}>{notificationCategoryLabel(category)}</span>
           {item.active === false && <span className="notification-resolved-pill">Resolved</span>}
         </div>
