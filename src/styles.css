@@ -1131,3 +1131,65 @@ h1 { font: 800 clamp(23px, 2vw, 29px)/1.22 Manrope, sans-serif; letter-spacing: 
 .dashboard-page .notification-icon {
   box-shadow: 0 3px 8px #1a35221c, inset 0 1px 0 #ffffff30;
 }
+
+
+/* Final dashboard icon palette: one refined forest-green treatment */
+.dashboard-page .metric-icon,
+.dashboard-page .metric-icon.green,
+.dashboard-page .metric-icon.orange,
+.dashboard-page .metric-icon.blue,
+.dashboard-page .metric-icon.purple,
+.dashboard-page .material-sensor-icon,
+.dashboard-page .material-sensor-icon.success,
+.dashboard-page .material-sensor-icon.warning,
+.dashboard-page .material-sensor-icon.material-water,
+.dashboard-page .material-sensor-icon.material-vinegar,
+.dashboard-page .material-sensor-icon.material-glycerin,
+.dashboard-page .material-sensor-icon.material-cornStarch,
+.dashboard-page .workflow-icon,
+.dashboard-page .notification-icon,
+.dashboard-page .notification-icon.info,
+.dashboard-page .notification-icon.success,
+.dashboard-page .notification-icon.warning,
+.dashboard-page .overview-power-icon,
+.dashboard-page .capacity-heading-icon {
+  color: #ffffff !important;
+  background: linear-gradient(145deg, #326b45 0%, #245638 52%, #173f2b 100%) !important;
+  border: 1px solid #285c3b !important;
+  box-shadow: 0 3px 8px #173f2828, inset 0 1px 0 #ffffff2b !important;
+}
+.dashboard-page .metric-icon svg,
+.dashboard-page .material-sensor-icon svg,
+.dashboard-page .workflow-icon svg,
+.dashboard-page .notification-icon svg,
+.dashboard-page .overview-power-icon svg,
+.dashboard-page .capacity-heading-icon svg {
+  color: #ffffff !important;
+}
+
+/* Material availability uses the same tile on Dashboard and Machine Status */
+.material-sensor-icon,
+.material-sensor-icon.success,
+.material-sensor-icon.warning,
+.material-sensor-icon.material-water,
+.material-sensor-icon.material-vinegar,
+.material-sensor-icon.material-glycerin,
+.material-sensor-icon.material-cornStarch {
+  color: #ffffff !important;
+  background: linear-gradient(145deg, #326b45 0%, #245638 52%, #173f2b 100%) !important;
+  border: 1px solid #285c3b !important;
+  box-shadow: 0 3px 8px #173f2828, inset 0 1px 0 #ffffff2b !important;
+}
+.material-sensor-icon svg { color: #ffffff !important; }
+
+/* Notification icon tiles share the same finish; category pills retain their own colors */
+.notification-icon,
+.notification-icon.info,
+.notification-icon.success,
+.notification-icon.warning {
+  color: #ffffff !important;
+  background: linear-gradient(145deg, #326b45 0%, #245638 52%, #173f2b 100%) !important;
+  border: 1px solid #285c3b !important;
+  box-shadow: 0 3px 8px #173f2828, inset 0 1px 0 #ffffff2b !important;
+}
+.notification-icon svg { color: #ffffff !important; }
