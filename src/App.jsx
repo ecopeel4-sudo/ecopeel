@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import {
   Activity, AlertTriangle, Bell, CalendarClock, Check, CheckCircle2,
   ChevronDown, ChevronLeft, ChevronRight, CircleHelp, ClipboardList, Clock3,
-  Droplet, Factory, Gauge, History, Layers, LayoutDashboard, Banana, LogIn,
+  Droplet, Factory, Gauge, History, Layers, LayoutDashboard, Banana, Info, LogIn,
   LogOut, Menu, Power, Search, ShieldCheck, Thermometer, Trash2, Wifi, WifiOff,
   Wind, X
 } from "lucide-react";
@@ -263,7 +263,6 @@ function EmptyState({ title, text }) {
 export default function App() {
   const [page, setPage] = useState("dashboard");
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [helpOpen, setHelpOpen] = useState(false);
   const [live, setLive] = useState(isFirebaseConfigured ? null : DEMO_LIVE);
   const [notifications, setNotifications] = useState(isFirebaseConfigured ? [] : DEMO_NOTIFICATIONS);
   const [history, setHistory] = useState(isFirebaseConfigured ? [] : DEMO_HISTORY);
@@ -295,15 +294,6 @@ export default function App() {
 
   const demoMode = !isFirebaseConfigured;
   const isAdmin = Boolean(user);
-
-  useEffect(() => {
-    if (!helpOpen) return undefined;
-    const closeOnEscape = (event) => {
-      if (event.key === "Escape") setHelpOpen(false);
-    };
-    window.addEventListener("keydown", closeOnEscape);
-    return () => window.removeEventListener("keydown", closeOnEscape);
-  }, [helpOpen]);
 
   const materialSensorStates = useMemo(
     () => MATERIAL_SENSORS.map((sensor) => ({ ...sensor, status: getMaterialSensorStatus(live, sensor.key) })),
@@ -804,9 +794,9 @@ export default function App() {
           )}
         </nav>
         <div className="sidebar-bottom">
-          <button type="button" className="sidebar-help" onClick={() => setHelpOpen(true)} aria-haspopup="dialog" aria-expanded={helpOpen}>
-            <div className="help-icon"><CircleHelp size={18} /></div>
-            <div><strong>Need Assistance?</strong><span>View system information</span></div>
+          <button type="button" className="sidebar-about" onClick={() => navigate("about")}>
+            <div className="about-icon"><Info size={18} /></div>
+            <div><strong>About EcoPeel</strong><span>Learn about the project</span></div>
             <ChevronRight size={16} />
           </button>
           <div className="sidebar-profile">
@@ -821,7 +811,7 @@ export default function App() {
         <header className="topbar">
           <div className="topbar-left">
             <button className="icon-button menu-button" aria-label="Open menu" onClick={() => setSidebarOpen(true)}><Menu size={21} /></button>
-            <div className="breadcrumbs"><span>EcoPeel</span><ChevronRight size={14} /><strong>{page === "dashboard" ? "Live dashboard" : page === "machine" ? "Machine status" : page === "notifications" ? "Notifications" : page === "history" ? "Production history" : page === "change-password" ? "Change password" : "Admin sign in"}</strong></div>
+            <div className="breadcrumbs"><span>EcoPeel</span><ChevronRight size={14} /><strong>{page === "dashboard" ? "Live dashboard" : page === "machine" ? "Machine status" : page === "notifications" ? "Notifications" : page === "history" ? "Production history" : page === "change-password" ? "Change password" : page === "about" ? "About EcoPeel" : "Admin sign in"}</strong></div>
           </div>
           <div className="topbar-right">
             <div className="updated-label"><span className={"connection-dot " + (machineOnline ? "" : "offline")} />{demoMode ? "Preview environment" : machineOnline ? "Device connected" : "Waiting for device"}</div>
@@ -1185,6 +1175,88 @@ export default function App() {
           </div>
         )}
 
+        {page === "about" && (
+          <div className="page-content about-page">
+            <div className="page-heading">
+              <div>
+                <div className="eyebrow">PROJECT OVERVIEW</div>
+                <h1>About EcoPeel</h1>
+                <p>Learn about the banana-peel bioplastic production system and its monitoring dashboard.</p>
+              </div>
+            </div>
+
+            <section className="about-hero panel">
+              <div className="about-hero-mark"><Banana size={30} strokeWidth={1.8} /></div>
+              <div className="about-hero-copy">
+                <div className="eyebrow">ECOPEEL · BIOPLASTIC SYSTEM</div>
+                <h2>From banana-peel material to a molded bioplastic product</h2>
+                <p>EcoPeel is a prototype production system designed to process banana-peel material through a sequence of grinding, ingredient dispensing, mixing and cooking, molding, transfer, and dehydration. This web application provides a central view of machine activity and recorded production batches.</p>
+              </div>
+            </section>
+
+            <div className="about-section-heading">
+              <div><h2>Production Process</h2><p>The machine follows these six main stages.</p></div>
+            </div>
+            <div className="about-process-grid">
+              <article className="about-process-card">
+                <span className="about-process-number">01 · PREPARATION</span>
+                <h3>Grinding</h3>
+                <p>The pulverizer prepares the banana-peel material for the next production stage.</p>
+              </article>
+              <article className="about-process-card">
+                <span className="about-process-number">02 · INGREDIENTS</span>
+                <h3>Raw Material Dispensing</h3>
+                <p>Water, glycerin, corn starch, and vinegar are dispensed in sequence.</p>
+              </article>
+              <article className="about-process-card">
+                <span className="about-process-number">03 · MIXING</span>
+                <h3>Mixing &amp; Cooking</h3>
+                <p>The dispensed ingredients are mixed while the cooking stage is active.</p>
+              </article>
+              <article className="about-process-card">
+                <span className="about-process-number">04 · MOLDING</span>
+                <h3>Molder Dispensing</h3>
+                <p>The prepared mixture is dispensed into a molder when the machine is ready.</p>
+              </article>
+              <article className="about-process-card">
+                <span className="about-process-number">05 · TRANSFER</span>
+                <h3>Molder Transfer</h3>
+                <p>The lift and linear actuators move filled molders into the dehydrator.</p>
+              </article>
+              <article className="about-process-card">
+                <span className="about-process-number">06 · DRYING</span>
+                <h3>Dehydrating</h3>
+                <p>The filled molders go through the machine's dehydration stage.</p>
+              </article>
+            </div>
+
+            <div className="about-details-grid">
+              <section className="panel about-info-panel">
+                <div className="about-info-heading"><div className="about-info-icon"><Droplet size={18} /></div><div><h3>Raw Materials &amp; Sensors</h3><p>Material availability is checked by the machine controller.</p></div></div>
+                <div className="about-material-grid">
+                  <div><strong>Water</strong><span>Non-contact liquid sensor</span></div>
+                  <div><strong>Vinegar</strong><span>Non-contact liquid sensor</span></div>
+                  <div><strong>Glycerin</strong><span>Non-contact liquid sensor</span></div>
+                  <div><strong>Corn starch</strong><span>IR sensor</span></div>
+                </div>
+                <p className="about-note">The start interlock checks that all four materials are available before the production process begins.</p>
+              </section>
+
+              <section className="panel about-info-panel">
+                <div className="about-info-heading"><div className="about-info-icon"><Activity size={18} /></div><div><h3>Web Monitoring</h3><p>Machine information is sent to the dashboard for viewing.</p></div></div>
+                <div className="about-monitor-list">
+                  <div><Thermometer size={16} /><span>Temperature and humidity readings</span></div>
+                  <div><Gauge size={16} /><span>Current machine state and process progress</span></div>
+                  <div><Bell size={16} /><span>Machine alerts and notifications</span></div>
+                  <div><History size={16} /><span>Completed and interrupted batch records</span></div>
+                </div>
+                <p className="about-note">The Arduino Mega manages the machine sequence. The ESP32 sends machine updates to Firebase, which the EcoPeel web application reads.</p>
+              </section>
+            </div>
+            <div className="page-footer"><span>EcoPeel · Banana-peel bioplastic production and monitoring</span><span><Info size={14} /> Project information</span></div>
+          </div>
+        )}
+
         {page === "login" && (
           <div className="login-page">
             <div className="login-card">
@@ -1204,63 +1276,6 @@ export default function App() {
               <div className="login-security"><ShieldCheck size={16} /><span>Admin access is verified through Firebase Authentication and an administrator custom claim.</span></div>
               <button className="back-link" onClick={() => setPage("dashboard")}>← Back to public dashboard</button>
             </div>
-          </div>
-        )}
-
-        {helpOpen && (
-          <div className="help-dialog-backdrop" role="presentation" onMouseDown={(event) => {
-            if (event.target === event.currentTarget) setHelpOpen(false);
-          }}>
-            <section className="help-dialog" role="dialog" aria-modal="true" aria-labelledby="help-dialog-title">
-              <div className="help-dialog-header">
-                <div className="help-dialog-brand">
-                  <div className="help-dialog-icon"><CircleHelp size={21} /></div>
-                  <div><div className="eyebrow">SUPPORT CENTER</div><h2 id="help-dialog-title">EcoPeel Help &amp; System Information</h2><p>Monitoring Station 01 · Banana-peel bioplastic machine</p></div>
-                </div>
-                <button type="button" className="icon-button help-dialog-close" onClick={() => setHelpOpen(false)} aria-label="Close help panel"><X size={18} /></button>
-              </div>
-
-              <div className="help-dialog-section">
-                <h3>Machine &amp; Connection</h3>
-                <div className="help-system-grid">
-                  <div className="help-system-item"><span>Device Connection</span><strong className={machineOnline ? "help-value-good" : "help-value-warning"}>{demoMode ? "Preview Mode" : machineOnline ? "Connected" : "Waiting for Device"}</strong></div>
-                  <div className="help-system-item"><span>Machine Power</span><strong>{machinePowerOn === null ? "Unknown" : machinePowerOn ? "ON" : "OFF"}</strong></div>
-                  <div className="help-system-item"><span>Current Process</span><strong>{currentStatus}</strong></div>
-                  <div className="help-system-item"><span>Last Device Update</span><strong>{live ? formatDate(live.updatedAt || live.timestamp) : "No data received"}</strong></div>
-                </div>
-              </div>
-
-              <div className="help-dialog-section">
-                <h3>Material Sensor Guide</h3>
-                <div className="help-material-list">
-                  {materialSensorStates.map((sensor) => {
-                    const stateLabel = sensor.status === "empty" ? "Empty" : sensor.status === "available" ? "Available" : "Waiting for data";
-                    return <div className="help-material-row" key={sensor.key}>
-                      <span>{sensor.label}<small>{sensor.sensorType}</small></span>
-                      <StatusPill tone={sensor.status === "empty" ? "warning" : sensor.status === "available" ? "success" : "neutral"}>{stateLabel}</StatusPill>
-                    </div>;
-                  })}
-                </div>
-                <p className="help-note">Empty means refill is needed. Waiting for data means the controller has not sent a recognized status yet.</p>
-              </div>
-
-              <div className="help-dialog-section">
-                <h3>Quick Troubleshooting</h3>
-                <div className="help-troubleshooting-list">
-                  <div><span>01</span><p><strong>Sensor cards say “Waiting for data”</strong>Check that the ESP32 publishes each sensor under <code>ecopeel/live/materialSensors</code> with an <code>empty</code> Boolean.</p></div>
-                  <div><span>02</span><p><strong>Device appears offline</strong>Check the ESP32 power, Wi-Fi connection, and the latest update under <code>ecopeel/live</code>.</p></div>
-                  <div><span>03</span><p><strong>Notifications are missing</strong>Check records under <code>ecopeel/notifications</code> and confirm the controller or ESP32 writes the expected event category.</p></div>
-                </div>
-              </div>
-
-              <div className="help-dialog-footer">
-                <span><Bell size={14} /> {unreadCount} unread notification{unreadCount === 1 ? "" : "s"}</span>
-                <div>
-                  <button type="button" className="help-secondary-button" onClick={() => { setPage("machine"); setHelpOpen(false); setSidebarOpen(false); }}>Machine Status</button>
-                  <button type="button" className="help-primary-button" onClick={() => { setPage("notifications"); setHelpOpen(false); setSidebarOpen(false); }}>View Notifications</button>
-                </div>
-              </div>
-            </section>
           </div>
         )}
 
