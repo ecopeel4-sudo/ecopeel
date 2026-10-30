@@ -718,3 +718,143 @@ h1 { font: 800 clamp(23px, 2vw, 29px)/1.22 Manrope, sans-serif; letter-spacing: 
   .about-process-card { min-height: auto; }
   .about-section-side-note { display: none; }
 }
+
+
+/* Deeper, more distinctive EcoPeel icon treatment */
+.about-hero-mark {
+  color: #f6fbf5;
+  background: linear-gradient(145deg, #285d39, #17472d);
+  border: 1px solid #17472d;
+  box-shadow: 0 7px 18px #1b573522, inset 0 1px 0 #ffffff26;
+}
+.about-hero-mark svg { filter: drop-shadow(0 1px 1px #12391c45); }
+
+.about-heading-icon {
+  color: #f5fbf5;
+  background: linear-gradient(145deg, #326f45, #214f33);
+  border: 1px solid #245936;
+  box-shadow: 0 4px 10px #24593620, inset 0 1px 0 #ffffff25;
+}
+
+.about-telemetry-icon {
+  color: #f4fbf5;
+  background: linear-gradient(145deg, #33834f, #22633b);
+  box-shadow: 0 3px 8px #2b774322;
+}
+.about-telemetry-banner.is-waiting .about-telemetry-icon {
+  color: #76551d;
+  background: linear-gradient(145deg, #f7e9c9, #f0dba9);
+}
+
+.about-connection-icon {
+  width: 30px;
+  height: 30px;
+  border-radius: 9px;
+  border: 1px solid #e1e9e0;
+  color: #294f36;
+  background: linear-gradient(145deg, #edf5ed, #e0ecdf);
+  box-shadow: 0 2px 5px #274a2b0c, inset 0 1px 0 #ffffff;
+}
+.about-connection-row:nth-child(2) .about-connection-icon {
+  color: #405a4c;
+  border-color: #e1e8e1;
+  background: linear-gradient(145deg, #f0f4f0, #e4ebe5);
+}
+.about-connection-row:nth-child(3) .about-connection-icon {
+  color: #17665e;
+  border-color: #d8e9e5;
+  background: linear-gradient(145deg, #eaf5f2, #dceee9);
+}
+.about-connection-row:nth-child(4) .about-connection-icon {
+  color: #6d6428;
+  border-color: #ebe7cf;
+  background: linear-gradient(145deg, #f8f5e8, #eee9cf);
+}
+.about-connection-row:nth-child(5) .about-connection-icon {
+  color: #285a70;
+  border-color: #dce8ee;
+  background: linear-gradient(145deg, #edf5f8, #dfebf0);
+}
+
+.about-process-icon {
+  width: 35px;
+  height: 35px;
+  border-radius: 10px;
+  border-color: #e0e9df;
+  color: #285d39;
+  background: linear-gradient(145deg, #f0f7ef, #e3efe2);
+  box-shadow: 0 2px 6px #274a2b0c, inset 0 1px 0 #ffffff;
+  transition: transform .16s ease, box-shadow .16s ease;
+}
+.about-process-card:hover .about-process-icon {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px #274a2b16, inset 0 1px 0 #ffffff;
+}
+.about-process-card:nth-child(2) .about-process-icon {
+  color: #176a63;
+  border-color: #d9eae6;
+  background: linear-gradient(145deg, #eef8f5, #dfeee9);
+}
+.about-process-card:nth-child(3) .about-process-icon {
+  color: #74652b;
+  border-color: #ece5cf;
+  background: linear-gradient(145deg, #faf7ea, #f0ead4);
+}
+.about-process-card:nth-child(4) .about-process-icon {
+  color: #385c72;
+  border-color: #dce7ed;
+  background: linear-gradient(145deg, #f0f6f9, #e1edf2);
+}
+.about-process-card:nth-child(5) .about-process-icon {
+  color: #315f43;
+  border-color: #dce9dd;
+  background: linear-gradient(145deg, #eff6ef, #e0ecdf);
+}
+.about-process-card:nth-child(6) .about-process-icon {
+  color: #53665a;
+  border-color: #e0e8e1;
+  background: linear-gradient(145deg, #f1f5f1, #e5ece6);
+}
+
+.about-info-icon {
+  color: #f6fbf6;
+  background: linear-gradient(145deg, #34764a, #245936);
+  border: 1px solid #2a643d;
+  box-shadow: 0 3px 9px #2459361c, inset 0 1px 0 #ffffff26;
+}
+.about-info-panel:nth-child(2) .about-info-icon {
+  color: #eaf6f3;
+  background: linear-gradient(145deg, #28786e, #195b55);
+  border-color: #1d675f;
+  box-shadow: 0 3px 9px #195b551c, inset 0 1px 0 #ffffff26;
+}
+
+.about-monitor-list svg {
+  color: #315f41;
+  background: #eaf3e9;
+  box-sizing: content-box;
+  width: 16px;
+  height: 16px;
+  padding: 6px;
+  border-radius: 8px;
+}
+.about-material-grid > div {
+  border-color: #e5ece3;
+  background: linear-gradient(145deg, #ffffff, #f8fbf7);
+}
+.about-material-grid > div::before {
+  content: "";
+  width: 16px;
+  height: 2px;
+  margin-bottom: 1px;
+  border-radius: 2px;
+  background: #3e7a4b;
+}
+.about-material-grid > div:nth-child(2)::before { background: #28766e; }
+.about-material-grid > div:nth-child(3)::before { background: #7a7134; }
+.about-material-grid > div:nth-child(4)::before { background: #527064; }
+
+@media (max-width: 540px) {
+  .about-connection-icon { width: 28px; height: 28px; }
+  .about-process-icon { width: 33px; height: 33px; }
+}
