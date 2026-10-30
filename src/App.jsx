@@ -970,7 +970,7 @@ export default function App() {
             <div className="panel workflow-full-panel">
               <div className="panel-header">
                 <div><h3>Production Sequence</h3><p>Process states reported or expected by the machine controller</p></div>
-                <span className="workflow-stage-count">{currentStepIndex === null ? "6 stages" : "Stage " + (currentStepIndex + 1) + " of " + PROCESS_STEPS.length}</span>
+                <span className="workflow-stage-count">{currentStepIndex === null ? "7 stages" : "Stage " + (currentStepIndex + 1) + " of " + PROCESS_STEPS.length}</span>
               </div>
               <div className="machine-progress-block">
                 <div className="machine-progress-heading">
@@ -988,11 +988,11 @@ export default function App() {
               </div>
               <div className="full-process-grid">
                 {PROCESS_STEPS.map((step, i) => {
-                  const stepIsCurrent = currentStepIndex === i || (currentStepIndex === null && demoMode && i === 5);
+                  const stepIsCurrent = currentStepIndex === i || (currentStepIndex === null && demoMode && i === 6);
                   const stepIsComplete = currentStepIndex !== null && i < currentStepIndex;
                   const stepClass = stepIsCurrent ? "current" : stepIsComplete ? "complete" : "upcoming";
                   const statusLabel = stepIsCurrent ? "Current Stage" : stepIsComplete ? "Completed Stage" : currentStepIndex === null ? "Awaiting Status Mapping" : "Upcoming Stage";
-                  const StepIcon = [Factory, Droplet, Activity, Layers, ArrowLeftRight, Wind][i];
+                  const StepIcon = [Factory, Droplet, Activity, Clock3, Layers, ArrowLeftRight, Wind][i];
                   return <div key={step} className={"full-process-card " + stepClass}>
                     <div className="full-process-card-top">
                       <span className="full-step-index">{String(i + 1).padStart(2, "0")}</span>
