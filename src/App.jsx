@@ -1009,20 +1009,46 @@ export default function App() {
         )}
 
         {page === "notifications" && (
-          <div className="page-content">
-            <div className="page-heading">
-              <div><div className="eyebrow">SYSTEM MESSAGES</div><h1>Notifications</h1><p>Filter machine events, review alerts, and manage read notifications.</p></div>
-              <div className="notification-count-card"><Bell size={17} /><strong>{unreadCount}</strong><span>unread</span></div>
+          <div className="page-content notifications-page">
+            <div className="page-heading notifications-page-heading">
+              <div>
+                <div className="eyebrow">SYSTEM ACTIVITY</div>
+                <h1>Notifications</h1>
+                <p>Review machine alerts, production updates, and important system events.</p>
+              </div>
+              <div className="notification-heading-status">
+                <span className="notification-heading-icon"><Bell size={17} /></span>
+                <div><strong>{unreadCount}</strong><span>Unread Notifications</span></div>
+              </div>
             </div>
+
+            <div className="notifications-overview-grid">
+              <article className="notification-overview-card">
+                <span className="notification-overview-icon total"><Bell size={17} /></span>
+                <div><span className="notification-overview-label">Total Notifications</span><strong>{notifications.length}</strong><small>Recorded machine events</small></div>
+              </article>
+              <article className="notification-overview-card unread">
+                <span className="notification-overview-icon unread"><Clock3 size={17} /></span>
+                <div><span className="notification-overview-label">Unread</span><strong>{unreadCount}</strong><small>Awaiting review</small></div>
+              </article>
+              <article className="notification-overview-card resolved">
+                <span className="notification-overview-icon resolved"><CheckCircle2 size={17} /></span>
+                <div><span className="notification-overview-label">Resolved</span><strong>{notifications.filter((item) => item.active === false).length}</strong><small>Issues cleared or restored</small></div>
+              </article>
+            </div>
+
             <section className="panel notifications-page-panel">
               <div className="panel-header notification-panel-header">
-                <div><h3>All Notifications</h3><p>{visibleNotifications.length} matching record{visibleNotifications.length === 1 ? "" : "s"} · {unreadCount} unread</p></div>
+                <div className="notification-panel-title">
+                  <div className="notification-panel-title-icon"><Bell size={17} /></div>
+                  <div><h3>Notification Center</h3><p>{visibleNotifications.length} matching record{visibleNotifications.length === 1 ? "" : "s"} · {unreadCount} unread across all notifications</p></div>
+                </div>
                 <div className="notification-header-tools">
                   {isAdmin && unreadCount > 0 && <button type="button" className="notification-action-button mark-read notification-mark-all-button" disabled={markingAllRead} onClick={handleMarkAllNotificationsRead} title="Mark all notifications as read">
                     {markingAllRead ? <span className="notification-button-spinner" /> : <Check size={14} />}
                     <span>{markingAllRead ? "Marking..." : "Mark all as read"}</span>
                   </button>}
-                  <label className="notification-type-filter"><span>Type</span><select className="filter-select" aria-label="Filter notifications by type" value={notificationFilter} onChange={(event) => setNotificationFilter(event.target.value)}>{NOTIFICATION_FILTERS.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}</select></label>
+                  <label className="notification-type-filter"><span>Filter By Type</span><select className="filter-select" aria-label="Filter notifications by type" value={notificationFilter} onChange={(event) => setNotificationFilter(event.target.value)}>{NOTIFICATION_FILTERS.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}</select></label>
                 </div>
               </div>
               {notificationActionError && <div className="history-action-error" role="alert"><AlertTriangle size={15} /><span>{notificationActionError}</span></div>}
