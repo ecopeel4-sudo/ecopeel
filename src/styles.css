@@ -1146,12 +1146,18 @@ h1 { font: 800 clamp(23px, 2vw, 29px)/1.22 Manrope, sans-serif; letter-spacing: 
 }
 
 
-/* Deep forest-green gradient header for Production History table */
+/* One continuous forest-green gradient across the full Production History header */
+.history-records-table thead {
+  background: linear-gradient(110deg, #326b45 0%, #245638 48%, #173f2b 100%);
+}
+.history-records-table thead tr {
+  background: transparent;
+}
 .history-records-table thead th {
-  background: linear-gradient(145deg, #326b45 0%, #245638 52%, #173f2b 100%);
+  background: transparent;
   color: #ffffff;
   border-bottom: 1px solid #173f2b;
-  box-shadow: inset 0 1px 0 #ffffff20;
+  box-shadow: none;
 }
 .history-records-table thead th .table-heading {
   color: #ffffff;
