@@ -180,7 +180,7 @@ function getCurrentStepIndex(live) {
   if (/waiting for molder|awaiting molder/.test(reportedState) || /waiting for molder|awaiting molder/.test(text)) return 3;
   if (/molder dispensing|dispensing molder/.test(text)) return 4;
   if (/molder transfer|transfer molder|transferring molder|linear actuator|lift motor|layer position|transfer(?!ring?)/.test(text)) return 5;
-  if (/mixing|mix(?:ing)?\\b|cooking|cook(?:ing)?\\b/.test(text)) return 2;
+  if (/mixing|mix(?:ing)?\b|cooking|cook(?:ing)?\b/.test(text)) return 2;
   if (/dehydrat|dehydration|drying|dry cycle/.test(text)) return 6;
   if (/grind|pulver/.test(text)) return 0;
   return null;
