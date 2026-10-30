@@ -356,6 +356,7 @@ h1 { font: 800 clamp(23px, 2vw, 29px)/1.22 Manrope, sans-serif; letter-spacing: 
 .production-supporting-icon { display: grid; place-items: center; width: 40px; height: 40px; flex: 0 0 40px; border-radius: 10px; background: #edf5eb; color: #39784a; }
 .production-supporting-icon.blue { background: #eaf3fc; color: #5289be; }
 .production-supporting-icon.purple { background: #f0edfb; color: #8170bd; }
+.production-supporting-icon.warning { background: #fff2dc; color: #a16e23; }
 .production-supporting-copy { min-width: 0; flex: 1; }
 .production-metric-heading { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
 .production-period-select { max-width: 112px; min-width: 86px; padding: 5px 18px 5px 7px; font-size: 9px; flex: 0 0 auto; }
