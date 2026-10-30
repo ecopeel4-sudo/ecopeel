@@ -1044,3 +1044,90 @@ h1 { font: 800 clamp(23px, 2vw, 29px)/1.22 Manrope, sans-serif; letter-spacing: 
 .notification-icon svg {
   color: #ffffff !important;
 }
+
+
+/* Semantic dark accent palette for dashboard and live material sensor icons */
+.dashboard-page .metric-icon.green {
+  color: #ffffff !important;
+  background: linear-gradient(145deg, #34794a, #19482d) !important;
+  border-color: #2d6b40;
+}
+.dashboard-page .metric-icon.orange {
+  color: #ffffff !important;
+  background: linear-gradient(145deg, #96602d, #67401f) !important;
+  border-color: #805128;
+}
+.dashboard-page .metric-icon.blue {
+  color: #ffffff !important;
+  background: linear-gradient(145deg, #286e79, #174e59) !important;
+  border-color: #225d67;
+}
+.dashboard-page .metric-icon.purple {
+  color: #ffffff !important;
+  background: linear-gradient(145deg, #536b7a, #354b59) !important;
+  border-color: #465e6d;
+}
+.dashboard-page .metric-icon svg,
+.dashboard-page .material-sensor-icon svg,
+.dashboard-page .workflow-icon svg,
+.dashboard-page .notification-icon svg,
+.dashboard-page .overview-power-icon svg,
+.dashboard-page .capacity-heading-icon svg {
+  color: #ffffff !important;
+}
+
+/* Material colors are consistent across Dashboard and Machine Status */
+.material-sensor-icon.material-water {
+  color: #ffffff !important;
+  background: linear-gradient(145deg, #286e79, #174e59) !important;
+  border-color: #225d67 !important;
+}
+.material-sensor-icon.material-vinegar {
+  color: #ffffff !important;
+  background: linear-gradient(145deg, #747437, #4e501f) !important;
+  border-color: #65662e !important;
+}
+.material-sensor-icon.material-glycerin {
+  color: #ffffff !important;
+  background: linear-gradient(145deg, #34794a, #19482d) !important;
+  border-color: #2d6b40 !important;
+}
+.material-sensor-icon.material-cornStarch {
+  color: #ffffff !important;
+  background: linear-gradient(145deg, #8a6a32, #60471f) !important;
+  border-color: #765a2b !important;
+}
+
+/* Notification icons use restrained colors that match their meaning */
+.notification-icon.info {
+  color: #ffffff !important;
+  background: linear-gradient(145deg, #3b687c, #25495e) !important;
+  border-color: #31586c !important;
+}
+.notification-icon.success {
+  color: #ffffff !important;
+  background: linear-gradient(145deg, #34794a, #19482d) !important;
+  border-color: #2d6b40 !important;
+}
+.notification-icon.warning {
+  color: #ffffff !important;
+  background: linear-gradient(145deg, #96602d, #67401f) !important;
+  border-color: #805128 !important;
+}
+.notification-icon svg { color: #ffffff !important; }
+
+/* Retain a calm, consistent tile shape and avoid oversized visual weight */
+.dashboard-page .metric-icon {
+  border-radius: 10px;
+  box-shadow: 0 3px 8px #1a35221c, inset 0 1px 0 #ffffff30;
+}
+.dashboard-page .material-sensor-icon {
+  border-radius: 10px;
+  box-shadow: 0 3px 8px #1a35221c, inset 0 1px 0 #ffffff30;
+}
+.dashboard-page .workflow-icon,
+.dashboard-page .overview-power-icon,
+.dashboard-page .capacity-heading-icon,
+.dashboard-page .notification-icon {
+  box-shadow: 0 3px 8px #1a35221c, inset 0 1px 0 #ffffff30;
+}
