@@ -4,7 +4,7 @@ import {
   ChevronDown, ChevronLeft, ChevronRight, CircleHelp, ClipboardList, Clock3,
   Droplet, Factory, Gauge, History, Layers, LayoutDashboard, Banana, Info, LogIn,
   LogOut, Menu, Power, Search, ShieldCheck, Thermometer, Trash2, Wifi, WifiOff,
-  Wind, X, Database, GitBranch, Cpu, Server
+  Wind, X, Database, GitBranch, Cpu, Server, ArrowLeftRight
 } from "lucide-react";
 import {
   Area, AreaChart, Bar, BarChart, CartesianGrid, ResponsiveContainer,
@@ -919,7 +919,7 @@ export default function App() {
         )}
 
         {page === "machine" && (
-          <div className="page-content">
+          <div className="page-content machine-status-page">
             <div className="page-heading"><div><div className="eyebrow">DEVICE DETAILS</div><h1>Machine Status</h1><p>Current operating state and sensor health for the EcoPeel machine.</p></div><StatusPill tone={machineOnline ? "success" : "warning"}>{demoMode ? "Demo environment" : machineOnline ? "Connected" : "Waiting for device"}</StatusPill></div>
             <div className="status-summary-card"><div className="machine-status-emblem"><Factory size={28} /></div><div className="machine-status-main"><span className="metric-label">CURRENT MACHINE STATE</span><h2>{currentStatus}</h2><p>{live?.currentStep || live?.process || "Waiting for process state data."}</p></div><div className="machine-status-meta"><span>Machine power</span><strong className={"power-reading " + (machinePowerOn === true ? "is-on" : machinePowerOn === false ? "is-off" : "is-unknown")}>{machinePowerOn === null ? "Unknown" : machinePowerOn ? "ON" : "OFF"}</strong><span>Device connection</span><StatusPill tone={machineOnline ? "success" : "warning"}>{machineOnline ? "Connected" : "Offline"}</StatusPill><small className="machine-updated">{live ? formatDate(live.updatedAt || live.timestamp) : "No data received"}</small></div></div>
             <div className="section-heading"><div><h2>Operating Sensors</h2><p>Values reported by the controller</p></div></div>
@@ -971,8 +971,12 @@ export default function App() {
                   const stepIsComplete = currentStepIndex !== null && i < currentStepIndex;
                   const stepClass = stepIsCurrent ? "current" : stepIsComplete ? "complete" : "upcoming";
                   const statusLabel = stepIsCurrent ? "Current Stage" : stepIsComplete ? "Completed Stage" : currentStepIndex === null ? "Awaiting Status Mapping" : "Upcoming Stage";
+                  const StepIcon = [Factory, Droplet, Activity, Layers, ArrowLeftRight, Wind][i];
                   return <div key={step} className={"full-process-card " + stepClass}>
-                    <span className="full-step-index">{String(i + 1).padStart(2, "0")}</span>
+                    <div className="full-process-card-top">
+                      <span className="full-step-index">{String(i + 1).padStart(2, "0")}</span>
+                      <span className="full-process-icon"><StepIcon size={18} strokeWidth={1.9} /></span>
+                    </div>
                     <strong>{step}</strong>
                     <span className="full-step-status">{statusLabel}</span>
                   </div>;
