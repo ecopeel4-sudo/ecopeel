@@ -1116,7 +1116,7 @@ export default function App() {
               {historyActionError && <div className="history-action-error" role="alert"><AlertTriangle size={15} /><span>{historyActionError}</span></div>}
               {visibleHistory.length ? <>
                 <div className="table-scroll">
-                  <table className="data-table">
+                  <table className="data-table history-records-table">
                     <thead>
                       <tr>
                         <th><span className="table-heading"><ClipboardList size={13} /> Batch ID</span></th>
