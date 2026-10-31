@@ -45,7 +45,7 @@ const DEMO_HISTORY = [
 
 const PROCESS_STEPS = [
   "Grinding", "Raw Material Dispensing", "Mixing & Cooking",
-  "Tray Dispensing", "Tray Transfer", "Dehydrating"
+  "Molder Dispensing", "Molder Transfer", "Dehydrating"
 ];
 
 const MATERIAL_SENSORS = [
