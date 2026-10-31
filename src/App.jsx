@@ -211,6 +211,38 @@ function getDateKey(parts) {
   return parts ? parts.year + "-" + parts.month + "-" + parts.day : "";
 }
 
+function isWithinManilaPeriod(value, period) {
+  const parts = getManilaDateParts(value);
+  const nowParts = getManilaDateParts(Date.now());
+  if (!parts || !nowParts) return false;
+
+  const key = getDateKey(parts);
+  const todayKey = getDateKey(nowParts);
+  const monthKey = nowParts.year + "-" + nowParts.month;
+
+  const todayUtc = new Date(Date.UTC(
+    Number(nowParts.year),
+    Number(nowParts.month) - 1,
+    Number(nowParts.day)
+  ));
+  const weekday = todayUtc.getUTCDay();
+  todayUtc.setUTCDate(todayUtc.getUTCDate() - (weekday === 0 ? 6 : weekday - 1));
+  const weekStartKey = todayUtc.toISOString().slice(0, 10);
+
+  if (period === "day") return key === todayKey;
+  if (period === "week") return key >= weekStartKey && key <= todayKey;
+  if (period === "month") return parts.year + "-" + parts.month === monthKey && key <= todayKey;
+  if (period === "year") return parts.year === nowParts.year && key <= todayKey;
+  return false;
+}
+
+function getPeriodLabel(period) {
+  return period === "day" ? "Today"
+    : period === "week" ? "This Week"
+      : period === "month" ? "This Month"
+        : "This Year";
+}
+
 function normalizeList(value) {
   if (!value) return [];
   if (Array.isArray(value)) {
@@ -265,7 +297,9 @@ export default function App() {
   const [notificationBusyKey, setNotificationBusyKey] = useState(null);
   const [markingAllRead, setMarkingAllRead] = useState(false);
   const [batchCountPeriod, setBatchCountPeriod] = useState("day");
+  const [successRatePeriod, setSuccessRatePeriod] = useState("day");
   const [moldersPeriod, setMoldersPeriod] = useState("day");
+  const [interruptedPeriod, setInterruptedPeriod] = useState("day");
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -413,6 +447,31 @@ export default function App() {
       return total + (Number.isFinite(count) ? count : 0);
     }, 0);
   }, [history, moldersPeriod]);
+
+  const successRateByPeriod = useMemo(() => {
+    const rows = history.filter((row) => {
+      if (row.isTest === true) return false;
+      const batchDate = row.endedAt || row.completedAt || row.finishedAt ||
+        row.completedTimestamp || row.timestamp || row.startedAt;
+      return isWithinManilaPeriod(batchDate, successRatePeriod);
+    });
+    if (!rows.length) return null;
+
+    const completed = rows.filter(
+      (row) => String(row.status || "").trim().toLowerCase() === "completed"
+    ).length;
+    return Math.round((completed / rows.length) * 100);
+  }, [history, successRatePeriod]);
+
+  const interruptedBatchesByPeriod = useMemo(() => {
+    return history.filter((row) => {
+      if (row.isTest === true) return false;
+      if (String(row.status || "").trim().toLowerCase() !== "interrupted") return false;
+      const batchDate = row.endedAt || row.completedAt || row.finishedAt ||
+        row.completedTimestamp || row.timestamp || row.startedAt;
+      return isWithinManilaPeriod(batchDate, interruptedPeriod);
+    }).length;
+  }, [history, interruptedPeriod]);
 
   useEffect(() => {
     if (!db) return undefined;
@@ -1029,9 +1088,17 @@ export default function App() {
                 <div className="production-supporting-metric">
                   <div className="production-supporting-icon"><CheckCircle2 size={20} strokeWidth={1.9} /></div>
                   <div className="production-supporting-copy">
-                    <span className="production-supporting-label">Success Rate</span>
-                    <div className="production-supporting-value">{history.length ? Math.round(history.filter((r) => String(r.status).toLowerCase() === "completed").length / history.length * 100) : "—"}<small>{history.length ? "%" : ""}</small></div>
-                    <span className="production-supporting-caption">Recorded batch outcomes</span>
+                    <div className="production-metric-heading">
+                      <span className="production-supporting-label">Success Rate</span>
+                      <select className="filter-select production-period-select" aria-label="Period for success rate" value={successRatePeriod} onChange={(event) => setSuccessRatePeriod(event.target.value)}>
+                        <option value="day">Today</option>
+                        <option value="week">This Week</option>
+                        <option value="month">This Month</option>
+                        <option value="year">This Year</option>
+                      </select>
+                    </div>
+                    <div className="production-supporting-value">{successRateByPeriod === null ? "—" : successRateByPeriod}<small>{successRateByPeriod === null ? "" : "%"}</small></div>
+                    <span className="production-supporting-caption">{getPeriodLabel(successRatePeriod)} · Recorded batch outcomes</span>
                   </div>
                 </div>
                 <div className="production-supporting-metric">
@@ -1053,9 +1120,17 @@ export default function App() {
                 <div className="production-supporting-metric">
                   <div className="production-supporting-icon warning"><AlertTriangle size={20} strokeWidth={1.9} /></div>
                   <div className="production-supporting-copy">
-                    <span className="production-supporting-label">Interrupted Batches</span>
-                    <div className="production-supporting-value">{history.length ? history.filter((row) => String(row.status || "").trim().toLowerCase() === "interrupted").length : "—"}</div>
-                    <span className="production-supporting-caption">Across all recorded batches</span>
+                    <div className="production-metric-heading">
+                      <span className="production-supporting-label">Interrupted Batches</span>
+                      <select className="filter-select production-period-select" aria-label="Period for interrupted batches" value={interruptedPeriod} onChange={(event) => setInterruptedPeriod(event.target.value)}>
+                        <option value="day">Today</option>
+                        <option value="week">This Week</option>
+                        <option value="month">This Month</option>
+                        <option value="year">This Year</option>
+                      </select>
+                    </div>
+                    <div className="production-supporting-value">{interruptedBatchesByPeriod}</div>
+                    <span className="production-supporting-caption">{getPeriodLabel(interruptedPeriod)} · Interrupted records</span>
                   </div>
                 </div>
               </div>
