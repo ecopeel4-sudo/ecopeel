@@ -31,7 +31,7 @@ const DEMO_LIVE = {
 const DEMO_NOTIFICATIONS = [
   { id: "n1", title: "Dehydration cycle in progress", message: "The current batch is in the drying stage.", type: "info", createdAt: Date.now() - 120000, read: false },
   { id: "n2", title: "Temperature reading updated", message: "Dehydrator temperature is within the demo operating range.", type: "success", createdAt: Date.now() - 900000, read: false },
-  { id: "n3", title: "Molder Transfer Completed", message: "4 of 6 molders loaded in this demo batch.", type: "success", createdAt: Date.now() - 3600000, read: true },
+  { id: "n3", title: "Tray Transfer Completed", message: "4 of 6 trays loaded in this demo batch.", type: "success", createdAt: Date.now() - 3600000, read: true },
   { id: "n4", title: "Demo mode enabled", message: "These are sample records, not readings from your machine.", type: "warning", createdAt: Date.now() - 7200000, read: true }
 ];
 
@@ -45,7 +45,7 @@ const DEMO_HISTORY = [
 
 const PROCESS_STEPS = [
   "Grinding", "Raw Material Dispensing", "Mixing & Cooking",
-  "Molder Dispensing", "Molder Transfer", "Dehydrating"
+  "Tray Dispensing", "Tray Transfer", "Dehydrating"
 ];
 
 const MATERIAL_SENSORS = [
@@ -59,7 +59,7 @@ const NOTIFICATION_FILTERS = [
   { value: "all", label: "All notification types" },
   { value: "malfunction", label: "Malfunction" },
   { value: "empty_chamber", label: "Empty chamber" },
-  { value: "no_molder", label: "No molder" },
+  { value: "no_molder", label: "No tray" },
   { value: "over_temperature", label: "Over temperature" },
   { value: "batch_done", label: "Batch done" },
   { value: "empty_material", label: "Empty material" },
@@ -878,8 +878,8 @@ export default function App() {
                 {notifications.length ? <div className="notification-list compact-list">{notifications.slice(0, 3).map((item) => <NotificationRow key={item.id} item={item} />)}</div> : <EmptyState title="No notifications" text="New alerts will appear here when recorded in Firebase." />}
               </section>
               <section className="panel capacity-panel">
-                <div className="panel-header"><div><h3>Dehydrator Capacity</h3><p>Molder loading progress</p></div><Factory size={18} className="muted-icon" /></div>
-                <div className="capacity-number"><strong>{live?.loadedMolders ?? (demoMode ? 4 : 0)}</strong><span>/ {live?.targetMolders ?? 6} molders loaded</span></div>
+                <div className="panel-header"><div><h3>Dehydrator Capacity</h3><p>Tray loading progress</p></div><Factory size={18} className="muted-icon" /></div>
+                <div className="capacity-number"><strong>{live?.loadedMolders ?? (demoMode ? 4 : 0)}</strong><span>/ {live?.targetMolders ?? 6} trays loaded</span></div>
                 <div className="capacity-slots">{Array.from({ length: Number(live?.targetMolders ?? 6) || 6 }, (_, i) => <span key={i} className={i < Number(live?.loadedMolders ?? (demoMode ? 4 : 0)) ? "slot filled" : "slot"} />)}</div>
                 <div className="capacity-footer"><span><i className="slot-key filled-key" /> Loaded</span><span><i className="slot-key empty-key" /> Available</span></div>
               </section>
@@ -956,12 +956,12 @@ export default function App() {
 
             <section className="panel capacity-panel machine-capacity-panel">
               <div className="panel-header">
-                <div><h3>Dehydrator Capacity</h3><p>Molder loading progress</p></div>
+                <div><h3>Dehydrator Capacity</h3><p>Tray loading progress</p></div>
                 <Factory size={19} className="muted-icon" />
               </div>
               <div className="capacity-number">
                 <strong>{live?.loadedMolders ?? (demoMode ? 4 : 0)}</strong>
-                <span>/ {live?.targetMolders ?? 6} molders loaded</span>
+                <span>/ {live?.targetMolders ?? 6} trays loaded</span>
               </div>
               <div className="capacity-slots">
                 {Array.from({ length: Number(live?.targetMolders ?? 6) || 6 }, (_, i) => (
@@ -1038,8 +1038,8 @@ export default function App() {
                   <div className="production-supporting-icon blue"><Factory size={20} strokeWidth={1.9} /></div>
                   <div className="production-supporting-copy">
                     <div className="production-metric-heading">
-                      <span className="production-supporting-label">Total Molders</span>
-                      <select className="filter-select production-period-select" aria-label="Period for total molders" value={moldersPeriod} onChange={(event) => setMoldersPeriod(event.target.value)}>
+                      <span className="production-supporting-label">Total Trays</span>
+                      <select className="filter-select production-period-select" aria-label="Period for total trays" value={moldersPeriod} onChange={(event) => setMoldersPeriod(event.target.value)}>
                         <option value="day">Today</option>
                         <option value="week">This week</option>
                         <option value="month">This month</option>
@@ -1093,7 +1093,7 @@ export default function App() {
                         <th><span className="table-heading"><CalendarClock size={13} /> Started</span></th>
                         <th><span className="table-heading"><CalendarClock size={13} /> Finished</span></th>
                         <th><span className="table-heading"><Clock3 size={13} /> Duration</span></th>
-                        <th><span className="table-heading"><Layers size={13} /> Molders</span></th>
+                        <th><span className="table-heading"><Layers size={13} /> Trays</span></th>
                         <th><span className="table-heading"><CheckCircle2 size={13} /> Status</span></th>
                         <th><span className="table-heading"><Trash2 size={13} /> Actions</span></th>
                       </tr>
@@ -1253,9 +1253,9 @@ export default function App() {
               <article className="about-process-card"><div className="about-process-card-top"><span className="about-process-number">01</span><span className="about-process-icon"><Factory size={18} /></span></div><h3>Grinding</h3><p>The pulverizer prepares the banana-peel material for the next production stage.</p></article>
               <article className="about-process-card"><div className="about-process-card-top"><span className="about-process-number">02</span><span className="about-process-icon"><Droplet size={18} /></span></div><h3>Raw Material Dispensing</h3><p>Water, glycerin, corn starch, and vinegar are dispensed in sequence.</p></article>
               <article className="about-process-card"><div className="about-process-card-top"><span className="about-process-number">03</span><span className="about-process-icon"><Activity size={18} /></span></div><h3>Mixing &amp; Cooking</h3><p>The ingredients are combined and heated during the mixing stage.</p></article>
-              <article className="about-process-card"><div className="about-process-card-top"><span className="about-process-number">04</span><span className="about-process-icon"><Layers size={18} /></span></div><h3>Molder Dispensing</h3><p>The prepared mixture is dispensed into a molder when the machine is ready.</p></article>
-              <article className="about-process-card"><div className="about-process-card-top"><span className="about-process-number">05</span><span className="about-process-icon"><Gauge size={18} /></span></div><h3>Molder Transfer</h3><p>The lift and linear actuators position filled molders inside the dehydrator.</p></article>
-              <article className="about-process-card"><div className="about-process-card-top"><span className="about-process-number">06</span><span className="about-process-icon"><Wind size={18} /></span></div><h3>Dehydrating</h3><p>The filled molders pass through the machine's drying stage.</p></article>
+              <article className="about-process-card"><div className="about-process-card-top"><span className="about-process-number">04</span><span className="about-process-icon"><Layers size={18} /></span></div><h3>Tray Dispensing</h3><p>The prepared mixture is dispensed into a tray when the machine is ready.</p></article>
+              <article className="about-process-card"><div className="about-process-card-top"><span className="about-process-number">05</span><span className="about-process-icon"><Gauge size={18} /></span></div><h3>Tray Transfer</h3><p>The lift and linear actuators position filled trays inside the dehydrator.</p></article>
+              <article className="about-process-card"><div className="about-process-card-top"><span className="about-process-number">06</span><span className="about-process-icon"><Wind size={18} /></span></div><h3>Dehydrating</h3><p>The filled trays pass through the machine's drying stage.</p></article>
             </div>
 
             <div className="about-details-grid">
@@ -1336,17 +1336,21 @@ function NotificationRow({ item, expanded = false, isAdmin = false, busy = false
   const tone = ["malfunction", "emergency_stop", "empty_chamber", "no_molder", "over_temperature", "empty_material"].includes(category)
     ? "warning"
     : category === "batch_done" ? "success" : "info";
+  const rawTitle = item.title || item.event || "Machine update";
+  const rawMessage = item.message || item.description || item.details || "A machine event was recorded.";
+  const displayTitle = category === "no_molder" ? "No Tray" : rawTitle.replace(/molders?/gi, (word) => word.toLowerCase() === "molders" ? "trays" : "tray");
+  const displayMessage = rawMessage.replace(/molders?/gi, (word) => word.toLowerCase() === "molders" ? "trays" : "tray");
   return (
     <div className={"notification-row " + (!item.read ? "unread" : "") + (item.active === false ? " resolved" : "")}>
       <div className={"notification-icon " + tone}><Icon size={17} /></div>
       <div className="notification-content">
         <div className="notification-title-line">
-          <strong>{item.title || item.event || "Machine update"}</strong>
+          <strong>{displayTitle}</strong>
           {!item.read && <span className="unread-dot" />}
           <span className={"notification-category-pill " + tone}>{notificationCategoryLabel(category)}</span>
           {item.active === false && <span className="notification-resolved-pill">Resolved</span>}
         </div>
-        <p>{item.message || item.description || item.details || "A machine event was recorded."}</p>
+        <p>{displayMessage}</p>
         {expanded && item.details && item.message && <small>{item.details}</small>}
       </div>
       <time>{relativeTime(item.createdAt || item.timestamp)}</time>
