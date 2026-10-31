@@ -1105,8 +1105,8 @@ export default function App() {
                   <div className="production-supporting-icon blue"><Factory size={20} strokeWidth={1.9} /></div>
                   <div className="production-supporting-copy">
                     <div className="production-metric-heading">
-                      <span className="production-supporting-label">Total Trays</span>
-                      <select className="filter-select production-period-select" aria-label="Period for total trays" value={moldersPeriod} onChange={(event) => setMoldersPeriod(event.target.value)}>
+                      <span className="production-supporting-label">Total Molders</span>
+                      <select className="filter-select production-period-select" aria-label="Period for total molders" value={moldersPeriod} onChange={(event) => setMoldersPeriod(event.target.value)}>
                         <option value="day">Today</option>
                         <option value="week">This week</option>
                         <option value="month">This month</option>
@@ -1168,7 +1168,7 @@ export default function App() {
                         <th><span className="table-heading"><CalendarClock size={13} /> Started</span></th>
                         <th><span className="table-heading"><CalendarClock size={13} /> Finished</span></th>
                         <th><span className="table-heading"><Clock3 size={13} /> Duration</span></th>
-                        <th><span className="table-heading"><Layers size={13} /> Trays</span></th>
+                        <th><span className="table-heading"><Layers size={13} /> Molders</span></th>
                         <th><span className="table-heading"><CheckCircle2 size={13} /> Status</span></th>
                         <th><span className="table-heading"><Trash2 size={13} /> Actions</span></th>
                       </tr>
