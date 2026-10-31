@@ -1219,12 +1219,12 @@ export default function App() {
                 <div className="about-connection-row">
                   <span className="about-connection-icon"><Server size={16} /></span>
                   <div className="about-connection-name"><strong>Frontend hosting</strong><small>EcoPeel web application</small></div>
-                  <div className="about-connection-value"><strong>Vercel</strong><span className="about-connection-state is-neutral">Production hosting</span></div>
+                  <div className="about-connection-value"><strong>Vercel</strong><span className="about-connection-state is-connected">Production Hosting</span></div>
                 </div>
                 <div className="about-connection-row">
                   <span className="about-connection-icon"><GitBranch size={16} /></span>
                   <div className="about-connection-name"><strong>Source control</strong><small>Project code repository</small></div>
-                  <div className="about-connection-value"><strong>GitHub</strong><span className="about-connection-state is-neutral">Repository</span></div>
+                  <div className="about-connection-value"><strong>GitHub</strong><span className="about-connection-state is-connected">Repository</span></div>
                 </div>
                 <div className="about-connection-row">
                   <span className="about-connection-icon"><Database size={16} /></span>
@@ -1234,12 +1234,12 @@ export default function App() {
                 <div className="about-connection-row">
                   <span className="about-connection-icon"><Cpu size={16} /></span>
                   <div className="about-connection-name"><strong>Machine controller</strong><small>Production sequence and sensor inputs</small></div>
-                  <div className="about-connection-value"><strong>Arduino Mega 2560</strong><span className={"about-connection-state " + (demoMode ? "is-neutral" : machineOnline ? "is-connected" : "is-offline")}>{demoMode ? "Preview only" : machineOnline ? "Telemetry received" : "Waiting for data"}</span></div>
+                  <div className="about-connection-value"><strong>Arduino Mega 2560</strong><span className={"about-connection-state " + (demoMode ? "is-neutral" : machineOnline ? "is-connected" : "is-offline")}>{demoMode ? "Preview only" : machineOnline ? "Telemetry Received" : "Waiting for Data"}</span></div>
                 </div>
                 <div className="about-connection-row">
                   <span className="about-connection-icon"><Wifi size={16} /></span>
                   <div className="about-connection-name"><strong>Network controller</strong><small>Wi-Fi and Firebase bridge</small></div>
-                  <div className="about-connection-value"><strong>ESP32</strong><span className={"about-connection-state " + (demoMode ? "is-neutral" : firebaseConnected && machineOnline ? "is-connected" : "is-offline")}>{demoMode ? "Preview only" : firebaseConnected && machineOnline ? "Data received" : "Awaiting update"}</span></div>
+                  <div className="about-connection-value"><strong>ESP32</strong><span className={"about-connection-state " + (demoMode ? "is-neutral" : firebaseConnected && machineOnline ? "is-connected" : "is-offline")}>{demoMode ? "Preview only" : firebaseConnected && machineOnline ? "Data Received" : "Awaiting Update"}</span></div>
                 </div>
               </div>
               <p className="about-connection-note">Controller availability is based on the latest machine telemetry received through the ESP32 bridge. Firebase connectivity reflects the web app's Realtime Database connection.</p>
