@@ -829,7 +829,7 @@ export default function App() {
               <MetricCard icon={Thermometer} label="Mixing Temperature" value={live?.temperature ?? live?.mixingTemperature ?? "—"} unit={live?.temperature != null || live?.mixingTemperature != null ? "°C" : ""} caption="Cooking and mixing unit" tone="green" />
               <MetricCard icon={Thermometer} label="Dehydrator Temperature" value={live?.dehydratorTemperature ?? "—"} unit={live?.dehydratorTemperature != null ? "°C" : ""} caption="Drying chamber" tone="orange" />
               <MetricCard icon={Droplet} label="Dehydrator Humidity" value={live?.humidity ?? "—"} unit={live?.humidity != null ? "%" : ""} caption="Relative humidity" tone="blue" />
-              <MetricCard icon={Factory} label="Molders Loaded" value={live ? (live.loadedMolders ?? 0) + " / " + (live.targetMolders ?? 6) : "—"} unit="" caption="Dehydrator capacity" tone="purple" />
+              <MetricCard icon={Factory} label="Trays Loaded" value={live ? (live.loadedMolders ?? 0) + " / " + (live.targetMolders ?? 6) : "—"} unit="" caption="Dehydrator capacity" tone="purple" />
             </div>
 
             <div className="section-heading material-sensor-section-heading">
